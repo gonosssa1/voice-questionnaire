@@ -110,7 +110,7 @@
       {
         id: 'neuro.gateway',
         section: 'Neurological',
-        question: 'Any disorder or disease of the brain, spinal cord or nervous system?',
+        question: 'Have you ever been diagnosed with any disorder or disease of the brain, spinal cord or nervous system?',
         type: 'yes_no',
         onNo: 'psych.gateway',
       },
@@ -140,7 +140,7 @@
       {
         id: 'psych.gateway',
         section: 'Psychiatric',
-        question: 'Any psychiatric, nervous, emotional, or mental disorder or disease?',
+        question: 'Have you ever been diagnosed with any psychiatric, nervous, emotional, or mental disorder or disease?',
         type: 'yes_no',
         onNo: 'eent.gateway',
       },
@@ -210,7 +210,7 @@
       {
         id: 'psych.substance_misuse',
         section: 'Psychiatric',
-        question: 'Any history of substance abuse, dependence, or misuse of prescribed medications?',
+        question: 'Have you ever been diagnosed with any history of substance abuse, dependence, or misuse of prescribed medications?',
         type: 'open',
         requires: { id: 'psych.gateway', answer: 'YES' },
       },
@@ -249,7 +249,7 @@
       {
         id: 'cardio.gateway',
         section: 'Cardiovascular',
-        question: 'Any disorder or disease of the heart, blood vessels, or circulatory system (including high blood pressure/high cholesterol)?',
+        question: 'Have you ever been diagnosed with any disorder or disease of the heart, blood vessels, or circulatory system (including high blood pressure/high cholesterol)?',
         type: 'yes_no',
         onNo: 'resp.gateway',
       },
@@ -328,7 +328,7 @@
       {
         id: 'resp.gateway',
         section: 'Respiratory',
-        question: 'Any disorder or disease of the respiratory system (asthma, COPD, sleep apnea, etc.)?',
+        question: 'Have you ever been diagnosed with any disorder or disease of the respiratory system (asthma, COPD, sleep apnea, etc.)?',
         type: 'yes_no',
         onNo: 'END',
       },
