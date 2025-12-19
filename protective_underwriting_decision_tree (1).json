@@ -1,0 +1,827 @@
+{
+  "carrier": "Protective",
+  "artifact_type": "medical_risk_assessment_decision_tree",
+  "version": "0.1",
+  "generated_at": "2025-12-17T22:15:22Z",
+  "notes": [
+    "This is an underwriting-style gateway/follow-on decision tree aligned to typical U.S. life/health intake patterns.",
+    "Carrier-specific scoring/knockout thresholds vary by product and program. Validate any numeric rules against Protective's current underwriting guidelines before production use."
+  ],
+  "schema": {
+    "node": {
+      "id": "string",
+      "section": "string",
+      "type": "gateway|follow_on",
+      "question": "string",
+      "answer_type": "boolean|single_select|text|date|integer|decimal",
+      "trigger": "expression (optional; required for follow_on)",
+      "added_for_underwriting": "boolean",
+      "children": "array[node_id] (optional)"
+    }
+  },
+  "root_nodes": [
+    "pmv.has_primary_provider",
+    "neuro.gateway",
+    "psych.gateway",
+    "eent.gateway",
+    "cardio.gateway",
+    "resp.gateway",
+    "gi.gateway",
+    "urinary.gateway",
+    "repro.gateway",
+    "breast_gyn.gateway",
+    "endo.gateway",
+    "msk.gateway",
+    "blood_immune.gateway",
+    "skin.gateway",
+    "cancer.gateway"
+  ],
+  "nodes": [
+    {
+      "id": "pmv.has_primary_provider",
+      "section": "Primary Medical Provider",
+      "type": "gateway",
+      "question": "Do you have a primary medical provider?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "pmv.last_visit_reason",
+        "pmv.last_visit_date",
+        "pmv.last_visit_results",
+        "pmv.last_visit_treatment",
+        "pmv.last_visit_provider_name",
+        "pmv.other_provider_reason"
+      ]
+    },
+    {
+      "id": "pmv.last_visit_reason",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "What was the reason for your last visit or consultation with your primary medical provider?",
+      "answer_type": "text",
+      "trigger": "pmv.has_primary_provider == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "pmv.last_visit_date",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "When was this visit?",
+      "answer_type": "date",
+      "trigger": "pmv.has_primary_provider == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "pmv.last_visit_results",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "What were the results?",
+      "answer_type": "text",
+      "trigger": "pmv.has_primary_provider == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "pmv.last_visit_treatment",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "What treatment or medications were prescribed?",
+      "answer_type": "text",
+      "trigger": "pmv.has_primary_provider == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "pmv.last_visit_provider_name",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "Do you know the name of the medical provider you saw for this checkup?",
+      "answer_type": "text",
+      "trigger": "pmv.has_primary_provider == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "pmv.other_provider_reason",
+      "section": "Primary Medical Provider",
+      "type": "follow_on",
+      "question": "Other than your primary medical provider, what was the reason for your last visit or consultation with any medical provider?",
+      "answer_type": "text",
+      "trigger": "true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "neuro.gateway",
+      "section": "Neurological",
+      "type": "gateway",
+      "question": "Any disorder or disease of the brain, spinal cord or nervous system?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "neuro.dx_list",
+        "neuro.dx_dates",
+        "neuro.hosp_impairment"
+      ]
+    },
+    {
+      "id": "neuro.dx_list",
+      "section": "Neurological",
+      "type": "follow_on",
+      "question": "What specific neurological condition(s) were diagnosed?",
+      "answer_type": "text",
+      "trigger": "neuro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "neuro.dx_dates",
+      "section": "Neurological",
+      "type": "follow_on",
+      "question": "Date of first diagnosis and date of most recent symptoms?",
+      "answer_type": "text",
+      "trigger": "neuro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "neuro.hosp_impairment",
+      "section": "Neurological",
+      "type": "follow_on",
+      "question": "Any hospitalizations, ER visits, seizures/episodes, or functional limitations in the past 5 years?",
+      "answer_type": "text",
+      "trigger": "neuro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "psych.gateway",
+      "section": "Psychiatric",
+      "type": "gateway",
+      "question": "Any psychiatric, nervous, emotional, or mental disorder or disease?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "psych.dx_list",
+        "psych.dx_dates",
+        "psych.current_tx",
+        "psych.meds_count",
+        "psych.meds_names",
+        "psych.disability_hosp",
+        "psych.provider_name",
+        "psych.med_changes_12m",
+        "psych.comorbid",
+        "psych.substance_misuse"
+      ]
+    },
+    {
+      "id": "psych.dx_list",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "What diagnosis(es) apply? (e.g., ADHD/ADD, anxiety, depression, bipolar, PTSD, etc.)",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.dx_dates",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "When was this condition diagnosed?",
+      "answer_type": "date",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.current_tx",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "Are you currently under treatment or taking medication for the condition?",
+      "answer_type": "boolean",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.meds_count",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "How many medications do you take, if any?",
+      "answer_type": "integer",
+      "trigger": "psych.gateway == true AND psych.current_tx == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.meds_names",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "What is/are the name(s) of the medication(s)?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true AND psych.current_tx == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.disability_hosp",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "In the past 3 years: any disability payments, missed >1 week of work, ER/hospitalization, or self-harm/suicidal ideation?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.provider_name",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "Do you know the name of the medical provider you saw for this condition?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "psych.med_changes_12m",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "Any medication changes, dose increases, or new prescriptions in the past 12 months?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "psych.comorbid",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "Any comorbid mental health diagnoses or active symptoms (panic attacks, major depression episodes, mania, etc.)?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "psych.substance_misuse",
+      "section": "Psychiatric",
+      "type": "follow_on",
+      "question": "Any history of substance abuse, dependence, or misuse of prescribed medications?",
+      "answer_type": "text",
+      "trigger": "psych.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "eent.gateway",
+      "section": "EENT",
+      "type": "gateway",
+      "question": "Any disorder or disease of the eyes, ears, nose, or throat?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "eent.dx",
+        "eent.treatment",
+        "eent.impairment"
+      ]
+    },
+    {
+      "id": "eent.dx",
+      "section": "EENT",
+      "type": "follow_on",
+      "question": "What condition (e.g., hearing loss, glaucoma, chronic sinusitis)?",
+      "answer_type": "text",
+      "trigger": "eent.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "eent.treatment",
+      "section": "EENT",
+      "type": "follow_on",
+      "question": "Is the condition corrected/treated (surgery, hearing aids, lenses, medication)?",
+      "answer_type": "text",
+      "trigger": "eent.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "eent.impairment",
+      "section": "EENT",
+      "type": "follow_on",
+      "question": "Does it impair daily activities, driving, or job duties?",
+      "answer_type": "text",
+      "trigger": "eent.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cardio.gateway",
+      "section": "Cardiovascular",
+      "type": "gateway",
+      "question": "Any disorder or disease of the heart, blood vessels, or circulatory system (including high blood pressure/high cholesterol)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "cardio.dx",
+        "cardio.dx_date",
+        "cardio.bp_known",
+        "cardio.on_meds",
+        "cardio.bp_sys",
+        "cardio.bp_dia",
+        "cardio.provider_name",
+        "cardio.control_duration",
+        "cardio.comorbid",
+        "cardio.testing_hosp"
+      ]
+    },
+    {
+      "id": "cardio.dx",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "What diagnosis(es) apply? (e.g., hypertension, hyperlipidemia, CAD, arrhythmia)",
+      "answer_type": "text",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.dx_date",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "When was the condition diagnosed?",
+      "answer_type": "date",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.bp_known",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Do you know your most recent blood pressure reading?",
+      "answer_type": "boolean",
+      "trigger": "cardio.gateway == true AND cardio.dx CONTAINS 'hypertension'",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.on_meds",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Are you taking medication for this condition?",
+      "answer_type": "boolean",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.bp_sys",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Most recent systolic blood pressure (top number)?",
+      "answer_type": "integer",
+      "trigger": "cardio.gateway == true AND cardio.bp_known == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.bp_dia",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Most recent diastolic blood pressure (bottom number)?",
+      "answer_type": "integer",
+      "trigger": "cardio.gateway == true AND cardio.bp_known == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.provider_name",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Do you know the name of the medical provider you saw for this condition?",
+      "answer_type": "text",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": false
+    },
+    {
+      "id": "cardio.control_duration",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "How long have readings been controlled at roughly the current level?",
+      "answer_type": "text",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cardio.comorbid",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Any related conditions (diabetes, kidney disease, stroke/TIA, heart disease)?",
+      "answer_type": "text",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cardio.testing_hosp",
+      "section": "Cardiovascular",
+      "type": "follow_on",
+      "question": "Any chest pain, shortness of breath on exertion, abnormal EKG/echo/stress test, ER visit, or hospitalization?",
+      "answer_type": "text",
+      "trigger": "cardio.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "resp.gateway",
+      "section": "Respiratory",
+      "type": "gateway",
+      "question": "Any disorder or disease of the respiratory system (asthma, COPD, sleep apnea, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "resp.dx",
+        "resp.severity",
+        "resp.exacerbations"
+      ]
+    },
+    {
+      "id": "resp.dx",
+      "section": "Respiratory",
+      "type": "follow_on",
+      "question": "What condition (asthma, sleep apnea, COPD, chronic bronchitis, etc.)?",
+      "answer_type": "text",
+      "trigger": "resp.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "resp.severity",
+      "section": "Respiratory",
+      "type": "follow_on",
+      "question": "How would you rate severity (mild/moderate/severe) and current control?",
+      "answer_type": "text",
+      "trigger": "resp.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "resp.exacerbations",
+      "section": "Respiratory",
+      "type": "follow_on",
+      "question": "Any hospitalizations/ER visits, steroid bursts, CPAP/oxygen therapy use in past 5 years?",
+      "answer_type": "text",
+      "trigger": "resp.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "gi.gateway",
+      "section": "Digestive",
+      "type": "gateway",
+      "question": "Any disorder or disease of stomach, liver, gall bladder, pancreas, or intestines?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "gi.dx",
+        "gi.recent_symptoms",
+        "gi.labs_imaging"
+      ]
+    },
+    {
+      "id": "gi.dx",
+      "section": "Digestive",
+      "type": "follow_on",
+      "question": "What diagnosis (GERD/reflux, ulcer, Crohn\u2019s/colitis, hepatitis, pancreatitis, etc.)?",
+      "answer_type": "text",
+      "trigger": "gi.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "gi.recent_symptoms",
+      "section": "Digestive",
+      "type": "follow_on",
+      "question": "Any active symptoms, bleeding, weight loss, or hospitalizations in past 5 years?",
+      "answer_type": "text",
+      "trigger": "gi.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "gi.labs_imaging",
+      "section": "Digestive",
+      "type": "follow_on",
+      "question": "Any abnormal liver tests, endoscopy/colonoscopy findings, or imaging results?",
+      "answer_type": "text",
+      "trigger": "gi.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "urinary.gateway",
+      "section": "Urinary",
+      "type": "gateway",
+      "question": "Any disorder or disease of the urinary organs (kidneys/bladder/urinary tract)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "urinary.dx",
+        "urinary.labs",
+        "urinary.tx_hosp"
+      ]
+    },
+    {
+      "id": "urinary.dx",
+      "section": "Urinary",
+      "type": "follow_on",
+      "question": "What condition (kidney stones, CKD, recurrent UTIs, protein/blood in urine, etc.)?",
+      "answer_type": "text",
+      "trigger": "urinary.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "urinary.labs",
+      "section": "Urinary",
+      "type": "follow_on",
+      "question": "Any abnormal labs (creatinine/eGFR/proteinuria) or imaging?",
+      "answer_type": "text",
+      "trigger": "urinary.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "urinary.tx_hosp",
+      "section": "Urinary",
+      "type": "follow_on",
+      "question": "Any ongoing treatment, procedures, or hospitalizations?",
+      "answer_type": "text",
+      "trigger": "urinary.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "repro.gateway",
+      "section": "Reproductive/STD",
+      "type": "gateway",
+      "question": "Any disease of the reproductive system or sexually transmitted infection/disease?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "repro.dx",
+        "repro.status",
+        "repro.complications"
+      ]
+    },
+    {
+      "id": "repro.dx",
+      "section": "Reproductive/STD",
+      "type": "follow_on",
+      "question": "What condition and date diagnosed?",
+      "answer_type": "text",
+      "trigger": "repro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "repro.status",
+      "section": "Reproductive/STD",
+      "type": "follow_on",
+      "question": "Is it resolved or ongoing? Any current treatment?",
+      "answer_type": "text",
+      "trigger": "repro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "repro.complications",
+      "section": "Reproductive/STD",
+      "type": "follow_on",
+      "question": "Any chronic effects or complications?",
+      "answer_type": "text",
+      "trigger": "repro.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "breast_gyn.gateway",
+      "section": "Breast/Gynecological",
+      "type": "gateway",
+      "question": "Any disorder of breasts/cervix/ovaries/uterus (abnormal pap/mammogram, fibroids, cysts, PCOS, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "breast_gyn.dx",
+        "breast_gyn.workup",
+        "breast_gyn.status"
+      ]
+    },
+    {
+      "id": "breast_gyn.dx",
+      "section": "Breast/Gynecological",
+      "type": "follow_on",
+      "question": "What condition and date diagnosed?",
+      "answer_type": "text",
+      "trigger": "breast_gyn.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "breast_gyn.workup",
+      "section": "Breast/Gynecological",
+      "type": "follow_on",
+      "question": "Any biopsies, abnormal imaging, or specialist evaluation?",
+      "answer_type": "text",
+      "trigger": "breast_gyn.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "breast_gyn.status",
+      "section": "Breast/Gynecological",
+      "type": "follow_on",
+      "question": "Is it resolved/controlled? Any ongoing treatment?",
+      "answer_type": "text",
+      "trigger": "breast_gyn.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "endo.gateway",
+      "section": "Endocrine/Metabolic",
+      "type": "gateway",
+      "question": "Any disorder of the endocrine system (thyroid, adrenal, diabetes, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "endo.dx",
+        "endo.control",
+        "endo.complications"
+      ]
+    },
+    {
+      "id": "endo.dx",
+      "section": "Endocrine/Metabolic",
+      "type": "follow_on",
+      "question": "What condition and date diagnosed?",
+      "answer_type": "text",
+      "trigger": "endo.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "endo.control",
+      "section": "Endocrine/Metabolic",
+      "type": "follow_on",
+      "question": "Current treatment and control status (recent labs/A1c/TSH if applicable)?",
+      "answer_type": "text",
+      "trigger": "endo.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "endo.complications",
+      "section": "Endocrine/Metabolic",
+      "type": "follow_on",
+      "question": "Any complications (neuropathy, kidney/eye disease, hospitalizations)?",
+      "answer_type": "text",
+      "trigger": "endo.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "msk.gateway",
+      "section": "Musculoskeletal",
+      "type": "gateway",
+      "question": "Any disorder of bones, joints, spine, or muscles (arthritis, chronic back pain, gout, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "msk.dx",
+        "msk.surgery_limits",
+        "msk.work_restrictions"
+      ]
+    },
+    {
+      "id": "msk.dx",
+      "section": "Musculoskeletal",
+      "type": "follow_on",
+      "question": "What condition and body area affected?",
+      "answer_type": "text",
+      "trigger": "msk.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "msk.surgery_limits",
+      "section": "Musculoskeletal",
+      "type": "follow_on",
+      "question": "Any surgeries, injections, or functional limitations?",
+      "answer_type": "text",
+      "trigger": "msk.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "msk.work_restrictions",
+      "section": "Musculoskeletal",
+      "type": "follow_on",
+      "question": "Any work restrictions, missed work, or disability claims?",
+      "answer_type": "text",
+      "trigger": "msk.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "blood_immune.gateway",
+      "section": "Blood/Immune",
+      "type": "gateway",
+      "question": "Any disorder of the blood or immune system (anemia, bleeding disorder, autoimmune disease, HIV, leukemia/lymphoma, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "blood_immune.dx",
+        "blood_immune.tx",
+        "blood_immune.hosp"
+      ]
+    },
+    {
+      "id": "blood_immune.dx",
+      "section": "Blood/Immune",
+      "type": "follow_on",
+      "question": "What condition and date diagnosed?",
+      "answer_type": "text",
+      "trigger": "blood_immune.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "blood_immune.tx",
+      "section": "Blood/Immune",
+      "type": "follow_on",
+      "question": "Current treatment and stability?",
+      "answer_type": "text",
+      "trigger": "blood_immune.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "blood_immune.hosp",
+      "section": "Blood/Immune",
+      "type": "follow_on",
+      "question": "Any transfusions, bleeding events, or hospitalizations?",
+      "answer_type": "text",
+      "trigger": "blood_immune.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "skin.gateway",
+      "section": "Skin",
+      "type": "gateway",
+      "question": "Any disorder or disease of the skin (cysts, lumps, growths, psoriasis, etc.)?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "skin.dx",
+        "skin.biopsy",
+        "skin.recurrence"
+      ]
+    },
+    {
+      "id": "skin.dx",
+      "section": "Skin",
+      "type": "follow_on",
+      "question": "What condition and location?",
+      "answer_type": "text",
+      "trigger": "skin.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "skin.biopsy",
+      "section": "Skin",
+      "type": "follow_on",
+      "question": "Any biopsies, atypical findings, or concern for malignancy?",
+      "answer_type": "text",
+      "trigger": "skin.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "skin.recurrence",
+      "section": "Skin",
+      "type": "follow_on",
+      "question": "Ongoing treatment or recurrence?",
+      "answer_type": "text",
+      "trigger": "skin.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cancer.gateway",
+      "section": "Cancer",
+      "type": "gateway",
+      "question": "Any cancer, tumor, nodule, melanoma, skin cancer, or other malignant disorder?",
+      "answer_type": "boolean",
+      "added_for_underwriting": false,
+      "children": [
+        "cancer.type_stage",
+        "cancer.tx_dates",
+        "cancer.recurrence"
+      ]
+    },
+    {
+      "id": "cancer.type_stage",
+      "section": "Cancer",
+      "type": "follow_on",
+      "question": "Type of cancer/tumor, stage/grade (if known), and date diagnosed?",
+      "answer_type": "text",
+      "trigger": "cancer.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cancer.tx_dates",
+      "section": "Cancer",
+      "type": "follow_on",
+      "question": "Treatment(s) received and date last treatment completed?",
+      "answer_type": "text",
+      "trigger": "cancer.gateway == true",
+      "added_for_underwriting": true
+    },
+    {
+      "id": "cancer.recurrence",
+      "section": "Cancer",
+      "type": "follow_on",
+      "question": "Any recurrence, metastasis, or ongoing surveillance findings?",
+      "answer_type": "text",
+      "trigger": "cancer.gateway == true",
+      "added_for_underwriting": true
+    }
+  ],
+  "optional_rules": {
+    "bp_risk_bands_example_only": [
+      {
+        "if": "cardio.bp_sys < 140 AND cardio.bp_dia < 90",
+        "risk_hint": "generally controlled range; underwriting class depends on meds count/age/build/other factors"
+      },
+      {
+        "if": "cardio.bp_sys >= 140 OR cardio.bp_dia >= 90",
+        "risk_hint": "may require additional review; consider repeat readings, meds count, and comorbidities"
+      },
+      {
+        "if": "cardio.bp_sys >= 160 OR cardio.bp_dia >= 100",
+        "risk_hint": "often treated as poorly controlled; may trigger postponement/ratings depending on context"
+      }
+    ]
+  }
+}
