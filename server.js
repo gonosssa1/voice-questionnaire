@@ -109,12 +109,17 @@ USER'S SPOKEN RESPONSE: "${transcript}"
 
 ${typeInstructions}
 
+If the response is a request to repeat or restate the question, respond with:
+{"valid": false, "normalized": null, "repeat": true}
+
 If the response is INVALID, include a brief explanation (one sentence, under 15 words) directed at the user (use "you"/"your") and asking for a valid response. Do not echo back what the user said. Do not repeat the question.
 
 RESPOND WITH ONLY THIS JSON (no markdown, no explanation, just the JSON):
 {"valid": true, "normalized": "THE_NORMALIZED_VALUE"}
 or
 {"valid": false, "normalized": null, "explanation": "Brief reason why this doesn't answer the question."}
+or
+{"valid": false, "normalized": null, "repeat": true}
 
 Remember:
 - Be strict for yes_no questions - only accept clear yes or no
@@ -303,6 +308,7 @@ function parseValidationResponse(content) {
       valid: !!result.valid,
       normalized: result.normalized || null,
       explanation: result.explanation || null,
+      repeat: !!result.repeat,
     };
   } catch (error) {
     console.error('Failed to parse LLM response:', content);
@@ -313,9 +319,31 @@ function parseValidationResponse(content) {
 /**
  * Fallback rule-based validation (when no API keys configured)
  */
+function isRepeatRequest(transcript) {
+  const normalized = transcript.toLowerCase().trim();
+  const patterns = [
+    'repeat',
+    'say that again',
+    'say it again',
+    'can you repeat',
+    'could you repeat',
+    'please repeat',
+    'repeat that',
+    'what was that',
+    'pardon',
+    'come again',
+    'say again',
+  ];
+  return patterns.some((p) => normalized.includes(p));
+}
+
 function fallbackValidation(questionType, transcript, choices) {
   const normalized = transcript.toLowerCase().trim();
   
+  if (isRepeatRequest(transcript)) {
+    return { valid: false, normalized: null, explanation: null, repeat: true };
+  }
+
   if (questionType === 'yes_no') {
     const yesPatterns = ['yes', 'yeah', 'yep', 'yup', 'correct', 'right', 'i do', 'i have', 'sure', 'absolutely'];
     const noPatterns = ['no', 'nope', 'nah', 'negative', "don't", 'do not', "haven't", 'have not', 'never'];

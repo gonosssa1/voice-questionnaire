@@ -544,7 +544,7 @@
           return await response.json();
         } catch (error) {
           console.error('Validation error:', error);
-          return { valid: false, normalized: null, explanation: null };
+          return { valid: false, normalized: null, explanation: null, repeat: false };
         }
       }
     }
@@ -602,7 +602,8 @@
         return this.findNextQuestionIndex(currentIndex + 1, answers);
       }
 
-      async askQuestion(questionIndex) {
+      async askQuestion(questionIndex, options = {}) {
+        const { preserveRetryCount = false } = options;
         if (questionIndex < 0 || questionIndex >= QUESTIONS.length) {
           this.setState({ status: 'speaking', currentQuestionIndex: -1 });
           this.state.transcript.push({ role: 'assistant', text: COMPLETION_MESSAGE });
@@ -615,7 +616,7 @@
         this.setState({ 
           status: 'speaking', 
           currentQuestionIndex: questionIndex,
-          retryCount: 0 
+          retryCount: preserveRetryCount ? this.state.retryCount : 0 
         });
 
         this.state.transcript.push({ role: 'assistant', text: question.question });
@@ -640,6 +641,14 @@
 
           this.state.transcript.push({ role: 'user', text: spokenAnswer });
           
+          if (this.isRepeatRequest(spokenAnswer)) {
+            const acknowledgement = "Sure, I'll repeat the question.";
+            this.state.transcript.push({ role: 'assistant', text: acknowledgement });
+            this.setState({ status: 'speaking' });
+            await this.tts.speak(acknowledgement);
+            return this.askQuestion(questionIndex, { preserveRetryCount: true });
+          }
+
           this.setState({ status: 'validating' });
           const validation = await this.validator.validate(
             question.question,
@@ -647,6 +656,14 @@
             spokenAnswer,
             question.choices
           );
+
+          if (validation.repeat) {
+            const acknowledgement = "Sure, I'll repeat the question.";
+            this.state.transcript.push({ role: 'assistant', text: acknowledgement });
+            this.setState({ status: 'speaking' });
+            await this.tts.speak(acknowledgement);
+            return this.askQuestion(questionIndex, { preserveRetryCount: true });
+          }
 
           if (!validation.valid) {
             if (this.state.retryCount < MAX_RETRIES) {
@@ -678,6 +695,30 @@
           console.error('ASR Error:', error);
           this.setState({ error: error.message, status: 'idle' });
         }
+      }
+
+      isRepeatRequest(transcript) {
+        const normalized = transcript.toLowerCase().trim();
+        const patterns = [
+          'repeat',
+          'say that again',
+          'say it again',
+          'can you repeat',
+          'could you repeat',
+          'please repeat',
+          'repeat that',
+          'what was that',
+          'pardon',
+          'come again',
+          'say again',
+          'repeat please',
+          'huh',
+          'sorry',
+          'what did you say',
+          'what was the question',
+          'what'
+        ];
+        return patterns.some((p) => normalized.includes(p));
       }
 
       getGenericExplanation(questionType) {
