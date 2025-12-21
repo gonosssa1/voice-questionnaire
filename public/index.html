@@ -544,7 +544,7 @@
           return await response.json();
         } catch (error) {
           console.error('Validation error:', error);
-          return { valid: false, normalized: null };
+          return { valid: false, normalized: null, explanation: null };
         }
       }
     }
@@ -650,14 +650,13 @@
 
           if (!validation.valid) {
             if (this.state.retryCount < MAX_RETRIES) {
-              this.setState({ retryCount: this.state.retryCount + 1 });
-              
-              let clarification = "I didn't quite understand that. ";
-              if (question.type === 'yes_no') {
-                clarification += "Please answer with yes or no. ";
-              }
-              clarification += "Let me ask again.";
-              
+              const retryNum = this.state.retryCount + 1;
+              this.setState({ retryCount: retryNum });
+
+              const explanation = validation.explanation || this.getGenericExplanation(question.type);
+              const escalation = retryNum === 2 ? " Let's try once more." : "";
+              const clarification = explanation + escalation;
+
               this.state.transcript.push({ role: 'assistant', text: clarification });
               await this.tts.speak(clarification);
               return this.askQuestion(questionIndex);
@@ -678,6 +677,22 @@
         } catch (error) {
           console.error('ASR Error:', error);
           this.setState({ error: error.message, status: 'idle' });
+        }
+      }
+
+      getGenericExplanation(questionType) {
+        switch (questionType) {
+          case 'yes_no':
+            return 'I need a clear yes or no answer.';
+          case 'date':
+            return 'I need a date.';
+          case 'number':
+            return 'I need a number.';
+          case 'choice':
+            return 'Please choose one of the options.';
+          case 'open':
+          default:
+            return "I didn't understand that.";
         }
       }
 

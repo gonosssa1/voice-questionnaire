@@ -109,10 +109,12 @@ USER'S SPOKEN RESPONSE: "${transcript}"
 
 ${typeInstructions}
 
+If the response is INVALID, include a brief explanation (one sentence, under 15 words) of why it doesn't match what was asked. Do not echo back what the user said. Do not repeat the question.
+
 RESPOND WITH ONLY THIS JSON (no markdown, no explanation, just the JSON):
 {"valid": true, "normalized": "THE_NORMALIZED_VALUE"}
 or
-{"valid": false, "normalized": null}
+{"valid": false, "normalized": null, "explanation": "Brief reason why this doesn't answer the question."}
 
 Remember:
 - Be strict for yes_no questions - only accept clear yes or no
@@ -300,6 +302,7 @@ function parseValidationResponse(content) {
     return {
       valid: !!result.valid,
       normalized: result.normalized || null,
+      explanation: result.explanation || null,
     };
   } catch (error) {
     console.error('Failed to parse LLM response:', content);
@@ -318,29 +321,35 @@ function fallbackValidation(questionType, transcript, choices) {
     const noPatterns = ['no', 'nope', 'nah', 'negative', "don't", 'do not', "haven't", 'have not', 'never'];
     
     for (const p of yesPatterns) {
-      if (normalized.includes(p)) return { valid: true, normalized: 'YES' };
+      if (normalized.includes(p)) return { valid: true, normalized: 'YES', explanation: null };
     }
     for (const p of noPatterns) {
-      if (normalized.includes(p)) return { valid: true, normalized: 'NO' };
+      if (normalized.includes(p)) return { valid: true, normalized: 'NO', explanation: null };
     }
-    return { valid: false, normalized: null };
+    return { valid: false, normalized: null, explanation: 'I need a clear yes or no answer.' };
   }
   
   if (questionType === 'choice' && choices) {
     for (const choice of choices) {
       if (normalized.includes(choice.toLowerCase())) {
-        return { valid: true, normalized: choice };
+        return { valid: true, normalized: choice, explanation: null };
       }
     }
-    return { valid: false, normalized: null };
+    return { valid: false, normalized: null, explanation: 'Please choose one of the options.' };
   }
   
   // For open/date/number, accept any non-empty response
   if (transcript.trim().length > 0) {
-    return { valid: true, normalized: transcript.trim() };
+    return { valid: true, normalized: transcript.trim(), explanation: null };
   }
   
-  return { valid: false, normalized: null };
+  let explanation = 'I did not understand that.';
+  if (questionType === 'date') {
+    explanation = 'I need a date.';
+  } else if (questionType === 'number') {
+    explanation = 'I need a number.';
+  }
+  return { valid: false, normalized: null, explanation };
 }
 
 // ============================================================================
