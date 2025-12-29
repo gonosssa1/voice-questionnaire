@@ -169,8 +169,11 @@ app.post('/api/tts', async (req, res) => {
           'xi-api-key': config.elevenlabs.apiKey,
         },
         body: JSON.stringify({
-          text,
+         text,
+         /** text:'je parle un peu francais, parle lentement sil vous plait', **/
+         /** text:'Hola, como estas, ahora yo trabajo en la casa', **/
           model_id: config.elevenlabs.modelId,
+         /**  language_code: 'es', **/
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,

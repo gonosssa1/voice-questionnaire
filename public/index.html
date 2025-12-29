@@ -65,8 +65,29 @@
     // ============================================================================
     // QUESTION SCRIPT - Exactly what will be asked, in exact order
     // ============================================================================
-    
+
     const QUESTIONS = [
+      // === Customer Identification ===
+      {
+        id: 'cust_id_first_name',
+        section: 'Welcome',
+        question: 'Can I have your first name?',
+        type: 'open',
+      },
+      {
+        id: 'cust_id_last_name',
+        section: 'Welcome',
+        question: 'Can I have your last name?',
+        type: 'open',
+      },
+
+      {
+        id: 'cust_id_gender',
+        section: 'Welcome',
+        question: 'Can I have your your physical gender?',
+        type: 'open',
+      },
+
       // === PRIMARY MEDICAL PROVIDER ===
       {
         id: 'pmv.has_primary_provider',
@@ -366,16 +387,19 @@
         requires: { id: 'resp.gateway', answer: 'YES' },
       },
     ];
-
-    const INTRO_MESSAGE = 
+   
+/*      const INTRO_MESSAGE = 
       "Hello, and thank you for starting your insurance application. " +
       "I will now ask you a series of medical history questions. " +
       "Please answer each question clearly. " +
       "For yes or no questions, please respond with yes or no. " +
-      "Let's begin.";
+      "Let's begin."; */
 
+      const INTRO_MESSAGE =
+      "Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your health, medications, some financials, even past or future travel. What this information will do is help us understand your health and financial situation as it relates to life insurance.";
+      
     const COMPLETION_MESSAGE = 
-      "Thank you for your answers. " +
+      "Thank you choosing Protective Life. " +
       "Your responses have been recorded. " +
       "A representative will review your information and contact you within 24 to 48 hours.";
 

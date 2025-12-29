@@ -20,6 +20,9 @@
     }
   },
   "root_nodes": [
+    "cust_id_first_name",
+    "cust_id_last_name",
+    "cust_id_gender",
     "pmv.has_primary_provider",
     "neuro.gateway",
     "psych.gateway",
@@ -37,6 +40,34 @@
     "cancer.gateway"
   ],
   "nodes": [
+    
+    { 
+      "id":"cust_id_first_name",
+      "section": "Welcome",
+      "question": "Can I have your first name?",
+      "answer_type": "text",
+      "added_for_underwriting": false,
+      "children": ["cust_id_last_name"]
+    },
+
+    { 
+      "id":"cust_id_last_name",
+      "section": "Welcome",
+      "question": "Can I have your last name?",
+      "answer_type": "text",
+      "added_for_underwriting": false,
+      "children": ["cust_id_gender"]
+    },
+
+    { 
+      "id":"cust_id_gender",
+      "section": "Welcome",
+      "question": "Can I have your last name?",
+      "answer_type": "text",
+      "added_for_underwriting": false,
+      "children": ["pmv.has_primary_provider"]
+    },
+    
     {
       "id": "pmv.has_primary_provider",
       "section": "Primary Medical Provider",
