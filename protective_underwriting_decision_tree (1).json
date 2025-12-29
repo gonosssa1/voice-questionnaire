@@ -22,6 +22,7 @@
   "root_nodes": [
     "cust_id_first_name",
     "cust_id_last_name",
+    "cust_id_gender",
     "pmv.has_primary_provider",
     "neuro.gateway",
     "psych.gateway",
@@ -51,6 +52,15 @@
 
     { 
       "id":"cust_id_last_name",
+      "section": "Welcome",
+      "question": "Can I have your last name?",
+      "answer_type": "text",
+      "added_for_underwriting": false,
+      "children": ["cust_id_gender"]
+    },
+
+    { 
+      "id":"cust_id_gender",
       "section": "Welcome",
       "question": "Can I have your last name?",
       "answer_type": "text",
