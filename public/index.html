@@ -83,7 +83,7 @@
       {
         id: 'cust_id_gender',
         section: 'Welcome',
-        question: 'Can I have your your physical gender?',
+        question: 'Can I have your physical gender?',
         type: 'open',
       },
 
@@ -666,7 +666,7 @@
       }
 
       async askQuestion(questionIndex, options = {}) {
-        const { preserveRetryCount = false } = options;
+        const { preserveRetryCount = false, retryCountOverride = null } = options;
         const sessionId = this.sessionId;
         if (questionIndex < 0 || questionIndex >= QUESTIONS.length) {
           this.setState({ status: 'speaking', currentQuestionIndex: -1 });
@@ -677,13 +677,30 @@
         }
 
         const shouldResetWhy = questionIndex !== this.state.currentQuestionIndex;
+        const shouldResetRetry = questionIndex !== this.state.currentQuestionIndex;
         const question = QUESTIONS[questionIndex];
         this.setState({ 
           status: 'speaking', 
           currentQuestionIndex: questionIndex,
-          retryCount: preserveRetryCount ? this.state.retryCount : 0,
+          retryCount: retryCountOverride !== null
+            ? retryCountOverride
+            : (shouldResetRetry ? 0 : this.state.retryCount),
           lastWhyExplanation: shouldResetWhy ? null : this.state.lastWhyExplanation,
         });
+
+        // Announce the Lifestyle and Medical Related questions
+        const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
+        if (questionIndex === 4) {
+          this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
+          await this.tts.speak(Lifestyle_and_Medical_Message);
+        }
+
+        // Announce the Medical Conditions related questions
+        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. I will read a few of them for you at a time. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
+        if (questionIndex === 10) {
+          this.state.transcript.push({ role: 'assistant', text: Medical_Conditions_Message });
+          await this.tts.speak(Medical_Conditions_Message);
+        }
 
         await this.speakAssistant(question.question, sessionId);
         if (this.sessionId !== sessionId) return;
@@ -696,10 +713,11 @@
           
           if (!spokenAnswer) {
             if (this.state.retryCount < MAX_RETRIES) {
-              this.setState({ retryCount: this.state.retryCount + 1 });
+              const nextRetry = this.state.retryCount + 1;
+              this.setState({ retryCount: nextRetry });
               await this.speakAssistant("I didn't hear anything. Let me repeat the question.", sessionId);
               if (this.sessionId !== sessionId) return;
-              return this.askQuestion(questionIndex);
+              return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: nextRetry });
             } else {
               await this.speakAssistant("I'm having trouble hearing you. Let's move on.", sessionId);
               if (this.sessionId !== sessionId) return;
@@ -708,7 +726,13 @@
             }
           }
 
-          this.state.transcript.push({ role: 'user', text: spokenAnswer });
+          const genderTranscript = question.id === 'cust_id_gender'
+            ? this.normalizeGenderValue(spokenAnswer)
+            : null;
+          const transcriptAnswer = genderTranscript
+            ? this.ensureTranscriptPeriod(genderTranscript)
+            : spokenAnswer;
+          this.state.transcript.push({ role: 'user', text: transcriptAnswer });
           
           if (this.isRepeatRequest(spokenAnswer)) {
             const acknowledgement = "Sure, I'll repeat the question.";
@@ -720,6 +744,18 @@
 
           if (this.isWhyRequest(spokenAnswer)) {
             return this.handleWhy(questionIndex, question, sessionId);
+          }
+
+          if (question.id === 'cust_id_gender') {
+            const genderValue = this.normalizeGenderValue(spokenAnswer);
+            if (genderValue) {
+              this.state.answers[question.id] = genderValue;
+              this.setState({ status: 'speaking' });
+              this.replaceLastUserTranscript(this.ensureTranscriptPeriod(genderValue));
+              await this.speakAssistant("Thank you.", sessionId);
+              if (this.sessionId !== sessionId) return;
+              return this.advanceToNextQuestion(questionIndex, genderValue);
+            }
           }
 
           return this.handleValidation(questionIndex, question, spokenAnswer, sessionId);
@@ -736,6 +772,17 @@
         if (this.sessionId !== sessionId) return;
         const updatedTranscript = this.state.transcript.concat({ role: 'assistant', text });
         this.setState({ transcript: updatedTranscript, pendingAssistantMessage: null });
+      }
+
+      replaceLastUserTranscript(text) {
+        const updatedTranscript = [...this.state.transcript];
+        for (let i = updatedTranscript.length - 1; i >= 0; i -= 1) {
+          if (updatedTranscript[i].role === 'user') {
+            updatedTranscript[i] = { ...updatedTranscript[i], text };
+            break;
+          }
+        }
+        this.setState({ transcript: updatedTranscript });
       }
 
       isRepeatRequest(transcript) {
@@ -763,6 +810,30 @@
           'say it',
         ];
         return patterns.some((p) => normalized.includes(p));
+      }
+
+      normalizeGenderValue(text) {
+        if (!text) return null;
+        const trimmed = text.trim();
+        const lowered = trimmed.toLowerCase().replace(/[^a-z]/g, '');
+        if (['male', 'mail', 'man', 'm'].includes(lowered)) {
+          return 'Male';
+        }
+        if (['female', 'femail', 'woman', 'f'].includes(lowered)) {
+          return 'Female';
+        }
+        if (['nonbinary', 'nb'].includes(lowered)) {
+          return 'Non-binary';
+        }
+        if (['other', 'prefernot', 'na'].includes(lowered)) {
+          return 'Other';
+        }
+        return null;
+      }
+
+      ensureTranscriptPeriod(text) {
+        const trimmed = text.trim();
+        return trimmed.endsWith('.') ? trimmed : `${trimmed}.`;
       }
 
       stripAcknowledgementPrefix(text) {
@@ -892,6 +963,11 @@
         if (this.sessionId !== sessionId) return;
 
         if (!response) {
+          if (this.state.retryCount < MAX_RETRIES) {
+            const nextRetry = this.state.retryCount + 1;
+            this.setState({ retryCount: nextRetry });
+            return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: nextRetry });
+          }
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
         }
 
@@ -919,6 +995,11 @@
         if (this.sessionId !== sessionId) return;
 
         if (!response) {
+          if (this.state.retryCount < MAX_RETRIES) {
+            const nextRetry = this.state.retryCount + 1;
+            this.setState({ retryCount: nextRetry });
+            return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: nextRetry });
+          }
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
         }
 
@@ -958,19 +1039,19 @@
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
         }
 
-        if (!validation.valid) {
-          if (this.state.retryCount < MAX_RETRIES) {
-            const retryNum = this.state.retryCount + 1;
-            this.setState({ retryCount: retryNum });
+          if (!validation.valid) {
+            if (this.state.retryCount < MAX_RETRIES) {
+              const retryNum = this.state.retryCount + 1;
+              this.setState({ retryCount: retryNum });
 
             const explanation = validation.explanation || this.getGenericExplanation(question.type);
             const escalation = retryNum === 2 ? " Let's try once more." : "";
             const clarification = explanation + escalation;
 
-            await this.speakAssistant(clarification, sessionId);
-            if (this.sessionId !== sessionId) return;
-            return this.askQuestion(questionIndex);
-          }
+              await this.speakAssistant(clarification, sessionId);
+              if (this.sessionId !== sessionId) return;
+              return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: retryNum });
+            }
 
           await this.speakAssistant("Let's move on to the next question.", sessionId);
           if (this.sessionId !== sessionId) return;
@@ -982,10 +1063,10 @@
         let cleanedAnswer = question.type === 'open'
           ? this.stripAcknowledgementPrefix(normalizedAnswer)
           : normalizedAnswer;
-        if (question.id === 'cust_id_gender' && cleanedAnswer) {
-          const lowered = cleanedAnswer.toLowerCase().trim();
-          if (lowered === 'mail') {
-            cleanedAnswer = 'male';
+        if (question.id === 'cust_id_gender') {
+          const genderValue = this.normalizeGenderValue(cleanedAnswer);
+          if (genderValue) {
+            cleanedAnswer = genderValue;
           }
         }
         this.state.answers[question.id] = cleanedAnswer;
