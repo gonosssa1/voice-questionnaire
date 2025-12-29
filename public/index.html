@@ -139,6 +139,8 @@
         requires: { id: 'pmv.has_primary_provider', answer: 'NO' },
       },
       
+      
+      
       // === NEUROLOGICAL ===
       {
         id: 'neuro.gateway',
@@ -666,6 +668,22 @@
           currentQuestionIndex: questionIndex,
           retryCount: preserveRetryCount ? this.state.retryCount : 0 
         });
+
+      // Announce the Lifestyle and Medical Related questions
+
+        const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays."
+        if (questionIndex ===4) {
+          this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
+          await this.tts.speak(Lifestyle_and_Medical_Message);
+        } 
+
+      // Announce the Medical Conditions related questions
+
+        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. I will read a few of them for you at a time. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary."
+        if (questionIndex ===10) {
+          this.state.transcript.push({ role: 'assistant', text: Medical_Conditions_Message });
+          await this.tts.speak(Medical_Conditions_Message);
+        } 
 
         this.state.transcript.push({ role: 'assistant', text: question.question });
         await this.tts.speak(question.question);
