@@ -179,7 +179,7 @@
       {
         id: 'psych.dx_list',
         section: 'Psychiatric',
-        question: 'What diagnosis(es) apply? (e.g., ADHD/ADD, anxiety, depression, bipolar, PTSD, etc.)',
+        question: 'What diagnoses) apply? (ADHD/ADD, anxiety, depression, bipolar, PTSD, etc.)',
         type: 'open',
         requires: { id: 'psych.gateway', answer: 'YES' },
       },
@@ -258,7 +258,7 @@
       {
         id: 'eent.dx',
         section: 'EENT',
-        question: 'What condition (e.g., hearing loss, glaucoma, chronic sinusitis)?',
+        question: 'What condition (hearing loss, glaucoma, chronic sinusitis)?',
         type: 'open',
         requires: { id: 'eent.gateway', answer: 'YES' },
       },
@@ -288,7 +288,7 @@
       {
         id: 'cardio.dx',
         section: 'Cardiovascular',
-        question: 'What diagnosis(es) apply? (e.g., hypertension, hyperlipidemia, CAD, arrhythmia)',
+        question: 'What diagnoses apply? (hypertension, hyperlipidemia, CAD, arrhythmia)',
         type: 'open',
         requires: { id: 'cardio.gateway', answer: 'YES' },
       },
@@ -307,13 +307,6 @@
         requires: { id: 'cardio.gateway', answer: 'YES' },
       },
       {
-        id: 'cardio.on_meds',
-        section: 'Cardiovascular',
-        question: 'Are you taking medication for this condition?',
-        type: 'yes_no',
-        requires: { id: 'cardio.gateway', answer: 'YES' },
-      },
-      {
         id: 'cardio.bp_sys',
         section: 'Cardiovascular',
         question: 'Most recent systolic blood pressure (top number)?',
@@ -326,6 +319,13 @@
         question: 'Most recent diastolic blood pressure (bottom number)?',
         type: 'number',
         requires: { id: 'cardio.bp_known', answer: 'YES' },
+      },
+      {
+        id: 'cardio.on_meds',
+        section: 'Cardiovascular',
+        question: 'Are you taking medication for this condition?',
+        type: 'yes_no',
+        requires: { id: 'cardio.gateway', answer: 'YES' },
       },
       {
         id: 'cardio.provider_name',
@@ -690,7 +690,7 @@
 
         // Announce the Lifestyle and Medical Related questions
         const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
-        if (questionIndex === 3) {
+        if (questionIndex === 4) {
           this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
           await this.tts.speak(Lifestyle_and_Medical_Message);
         }
