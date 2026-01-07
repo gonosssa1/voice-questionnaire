@@ -92,7 +92,7 @@
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
         followups: {
-          max: 3,
+          max: 5,
           when: 'after_valid',
           topic: 'primary care visit details',
           guidance: 'Focus on cause, diagnosis, or treatment. Do not ask about tests, labs, imaging, or results unless the user explicitly mentioned them.',
@@ -113,7 +113,7 @@
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
         followups: {
-          max: 3,
+          max: 5,
           when: 'after_valid',
           topic: 'visit results and outcomes',
           guidance: 'Ask about outcome, diagnosis, treatment changes, or doctor summary. Avoid lab values unless tests were mentioned.',
@@ -127,7 +127,7 @@
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
         followups: {
-          max: 3,
+          max: 5,
           when: 'after_valid',
           topic: 'treatment and medications',
           guidance: 'Ask about dosages, adherence, treatment changes, or side effects. If unclear, confirm the treatment or medication is for the stated condition. Avoid re-asking for medication names.',
@@ -193,7 +193,7 @@
         type: 'yes_no',
         requires: { id: 'cardio.gateway', answer: 'YES' },
         followups: {
-          max: 3,
+          max: 5,
           when: 'after_valid',
           topic: 'cardiovascular medications',
           guidance: 'Ask about medication names, dosage, or adherence. If unclear, confirm the medication is for the stated condition. Avoid labs unless tests were mentioned.',

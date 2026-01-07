@@ -120,9 +120,10 @@ voice-questionnaire/
 1. **Security**: API keys stay on the server, never exposed to browser
 2. **Determinism**: Questions are in a static array - no AI can skip them
 3. **AI Validation**: The LLM only validates answers, can't change flow
-4. **User Feedback**: Invalid answers can include a concise explanation before re-asking
-5. **Repeat Requests**: "Repeat that" style requests re-play the current question
-6. **Fallback**: Works without API keys using Web Speech + rule-based validation
+4. **LLM Follow-ups**: Optional, bounded clarifying questions that return to the script
+5. **User Feedback**: Invalid answers can include a concise explanation before re-asking
+6. **Repeat Requests**: "Repeat that" style requests re-play the current question
+7. **Fallback**: Works without API keys using Web Speech + rule-based validation
 
 ---
 
@@ -191,6 +192,36 @@ Repeat request example:
 }
 ```
 
+### POST /api/why
+
+Returns a brief explanation of why a question is asked:
+
+```bash
+curl -X POST http://localhost:3000/api/why \
+  -H "Content-Type: application/json" \
+  -d '{"question":"Do you have a primary medical provider?","section":"Primary Medical Provider"}'
+```
+
+### POST /api/followup
+
+Generates a single LLM follow-up question or `{done:true}`:
+
+```bash
+curl -X POST http://localhost:3000/api/followup \
+  -H "Content-Type: application/json" \
+  -d '{"section":"Primary Medical Provider","questionText":"What were the results?","lastAnswer":"Headache","priorAnswers":["Headache"]}'
+```
+
+### POST /api/followup-check
+
+Blocks overlap with upcoming scripted questions:
+
+```bash
+curl -X POST http://localhost:3000/api/followup-check \
+  -H "Content-Type: application/json" \
+  -d '{"candidateQuestion":"When was this visit?","upcomingQuestions":["When was this visit?"]}'
+```
+
 ---
 
 ## Customizing Questions
@@ -210,6 +241,19 @@ const QUESTIONS = [
     
     // Optional: Only ask if a previous answer matches
     requires: { id: 'prev_question_id', answer: 'YES' },
+
+    // Optional: More complex requirements
+    // requires: [{ id: 'cardio.gateway', answer: 'YES' }, { id: 'cardio.dx', contains: 'hypertension' }],
+
+    // Optional: Bounded LLM follow-ups
+    followups: {
+      max: 5,
+      when: 'after_valid',
+      topic: 'visit details',
+      guidance: 'Ask about diagnosis or treatment only.',
+      retryLimit: 3,
+      stopOnNoResponse: true,
+    },
     
     // Optional: For 'choice' type questions
     choices: ['option1', 'option2', 'option3'],
@@ -217,6 +261,8 @@ const QUESTIONS = [
   // ... more questions
 ];
 ```
+
+Follow-ups are optional and bounded. The LLM may return `{done:true}` and skip follow-ups at any time.
 
 ---
 
