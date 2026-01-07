@@ -167,10 +167,13 @@
         section: 'Cardiovascular',
         question: 'Do you know your most recent blood pressure reading?',
         type: 'yes_no',
-        requires: [
-          { id: 'cardio.gateway', answer: 'YES' },
-          { id: 'cardio.dx', contains: 'hypertension' },
-        ],
+        requires: {
+          all: [{ id: 'cardio.gateway', answer: 'YES' }],
+          any: [
+            { id: 'cardio.dx', contains: 'hypertension' },
+            { id: 'cardio.dx', contains: 'high blood pressure' },
+          ],
+        },
       },
       {
         id: 'cardio.bp_sys',
@@ -185,6 +188,19 @@
         question: 'Most recent diastolic blood pressure (bottom number)?',
         type: 'number',
         requires: { id: 'cardio.bp_known', answer: 'YES' },
+      },
+      {
+        id: 'cardio.control_duration',
+        section: 'Cardiovascular',
+        question: 'How long have readings been controlled at roughly the current level?',
+        type: 'open',
+        requires: {
+          all: [{ id: 'cardio.bp_known', answer: 'YES' }],
+          any: [
+            { id: 'cardio.dx', contains: 'hypertension' },
+            { id: 'cardio.dx', contains: 'high blood pressure' },
+          ],
+        },
       },
       {
         id: 'cardio.on_meds',
@@ -206,14 +222,7 @@
         question: 'Do you know the name of the medical provider you saw for this condition?',
         type: 'open',
         requires: { id: 'cardio.gateway', answer: 'YES' },
-      },
-      {
-        id: 'cardio.control_duration',
-        section: 'Cardiovascular',
-        question: 'How long have readings been controlled at roughly the current level?',
-        type: 'open',
-        requires: { id: 'cardio.gateway', answer: 'YES' },
-      },
+      }
     ];
 
     const INTRO_MESSAGE =
@@ -496,6 +505,7 @@
           retryCount: 0,
           explainCounts: {},
           lastWhyExplanation: null,
+          announcementsPlayed: {},
           followups: {},
           pendingAssistantMessage: null,
           error: null,
@@ -519,8 +529,17 @@
           const q = QUESTIONS[i];
           
           if (q.requires) {
-            const requirementList = Array.isArray(q.requires) ? q.requires : [q.requires];
-            const meetsAll = requirementList.every((req) => {
+            const requirementGroups = q.requires.all || q.requires.any
+              ? {
+                  all: Array.isArray(q.requires.all) ? q.requires.all : [],
+                  any: Array.isArray(q.requires.any) ? q.requires.any : [],
+                }
+              : {
+                  all: Array.isArray(q.requires) ? q.requires : [q.requires],
+                  any: [],
+                };
+
+            const matchesRequirement = (req) => {
               const dependentAnswer = answers[req.id];
               if (req.answer && dependentAnswer !== req.answer) return false;
               if (req.contains) {
@@ -528,8 +547,14 @@
                 if (!normalized.includes(req.contains.toLowerCase())) return false;
               }
               return true;
-            });
-            if (!meetsAll) continue;
+            };
+
+            const meetsAll = requirementGroups.all.every(matchesRequirement);
+            const meetsAny = requirementGroups.any.length === 0
+              ? true
+              : requirementGroups.any.some(matchesRequirement);
+
+            if (!meetsAll || !meetsAny) continue;
           }
           
           return i;
@@ -668,9 +693,15 @@
 
         // Announce the Medical Conditions related questions
         const Medical_Conditions_Message = "Now we will go through some specific medical conditions. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
-        if (questionIndex === 8) {
+        if (questionIndex === 8 && !this.state.announcementsPlayed.medicalConditions) {
           this.setState({ showQuestionText: false });
           await this.speakAssistant(Medical_Conditions_Message, sessionId);
+          this.setState({
+            announcementsPlayed: {
+              ...this.state.announcementsPlayed,
+              medicalConditions: true,
+            },
+          });
         }
 
         this.setState({ showQuestionText: true });
@@ -1097,6 +1128,7 @@
           retryCount: 0,
           explainCounts: {},
           lastWhyExplanation: null,
+          announcementsPlayed: {},
           followups: {},
           pendingAssistantMessage: null,
           error: null,
