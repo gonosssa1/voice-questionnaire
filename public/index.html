@@ -217,12 +217,11 @@
     ];
 
     const INTRO_MESSAGE =
-      "Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your health, medications, some financials, even past or future travel. What this information will do is help us understand your health and financial situation as it relates to life insurance.";
+      "Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your lifestyle and health. This information will help us with your life insurance application.";
 
     const COMPLETION_MESSAGE = 
       "Thank you for choosing Protective Life. " +
-      "Your responses have been recorded. " +
-      "A representative will review your information and contact you within 24 to 48 hours.";
+      "Your responses have been recorded. ";
 
     const MAX_RETRIES = 3;
     const MAX_EXPLAINS = 2;
@@ -660,19 +659,18 @@
         });
 
         // Announce the Lifestyle and Medical Related questions
-        const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
-        if (questionIndex === 2) {
-          this.setState({ showQuestionText: false });
-          this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
-          await this.tts.speak(Lifestyle_and_Medical_Message);
-        }
+        // const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
+        // if (questionIndex === 2) {
+        //   this.setState({ showQuestionText: false });
+        //   this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
+        //   await this.tts.speak(Lifestyle_and_Medical_Message);
+        // }
 
         // Announce the Medical Conditions related questions
-        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. I will read a few of them for you at a time. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
+        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
         if (questionIndex === 8) {
           this.setState({ showQuestionText: false });
-          this.state.transcript.push({ role: 'assistant', text: Medical_Conditions_Message });
-          await this.tts.speak(Medical_Conditions_Message);
+          await this.speakAssistant(Medical_Conditions_Message, sessionId);
         }
 
         this.setState({ showQuestionText: true });
