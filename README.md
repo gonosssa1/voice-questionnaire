@@ -48,6 +48,10 @@ npm run dev
 
 Navigate to: **http://localhost:3000**
 
+### Language Selection
+
+Use the language selector in the top bar to switch between English and Spanish before starting. English remains the default.
+
 ---
 
 ## VS Code Setup

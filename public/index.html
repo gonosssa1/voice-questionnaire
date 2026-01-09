@@ -224,13 +224,194 @@
         requires: { id: 'cardio.gateway', answer: 'YES' },
       }
     ];
+    const DEFAULT_LANGUAGE = 'en';
+    const LANGUAGE_OPTIONS = {
+      en: { label: 'English', asrLang: 'en-US', ttsLang: 'en-US', htmlLang: 'en' },
+      es: { label: 'Español', asrLang: 'es-ES', ttsLang: 'es-ES', htmlLang: 'es' },
+    };
 
-    const INTRO_MESSAGE =
-      "Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your lifestyle and health. This information will help us with your life insurance application.";
+    const UI_STRINGS = {
+      en: {
+        title: 'AI-Validated Insurance Questionnaire',
+        headerSubtitle: 'AI Voice Application Prototype',
+        headerTitle: 'Medical History Questionnaire',
+        headerTagline: 'Insurance Application',
+        progressLabel: 'Progress',
+        questionCount: (current, total) => `Question ${current} of ${total}`,
+        readyTitle: 'Ready to Begin',
+        readyDescription: 'This questionnaire will ask about your medical history using voice interaction. Please ensure you are in a quiet environment and speak clearly.',
+        startButton: 'Start Application',
+        unsupportedAsr: 'Voice recognition is not supported in this browser. Please use Chrome or Edge.',
+        speakingLabel: 'Speaking',
+        speakingSub: 'Please listen to the question',
+        listeningLabel: 'Listening',
+        listeningSub: 'Please speak your answer clearly',
+        validatingLabel: 'Processing',
+        validatingSub: 'Analyzing your response with AI',
+        yesNoHint: 'Please answer yes or no',
+        optionsLabel: 'Options',
+        retryLabel: (current, total) => `Attempt ${current} of ${total}`,
+        endCallButton: 'End Call',
+        completionTitle: 'Application Complete',
+        completionDescription: 'Thank you for completing the questionnaire. Your responses have been recorded.',
+        summaryTitle: 'Response Summary',
+        summaryEmpty: 'No responses recorded',
+        followupLabel: (index) => `Follow-up ${index}:`,
+        restartButton: 'Start New Application',
+        handoffTitle: 'Agent Handoff Requested',
+        handoffDescription: 'We can connect you with an agent to finish this question.',
+        handoffRestartButton: 'Start Over',
+        chatAssistantName: 'Underwriting Assistant',
+        chatSubtitle: 'Live demo transcript',
+        chatEmpty: 'Conversation will appear here.',
+        voiceModeEnabled: 'Voice mode enabled',
+        transcriptLabel: (count) => `Transcript (${count})`,
+        transcriptUser: 'User',
+        transcriptSystem: 'System',
+        languageLabel: 'Language',
+        introMessage: 'Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your lifestyle and health. This information will help us with your life insurance application.',
+        completionMessage: 'Thank you for choosing Protective Life. Your responses have been recorded.',
+        whyFallback: 'This helps us understand your medical history for your application.',
+        medicalConditionsAnnouncement: 'Now we will go through some specific medical conditions. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.',
+        noResponseRetry: "I didn't hear anything. Let me repeat the question.",
+        noResponseMoveOn: "I'm having trouble hearing you. Let's move on.",
+        repeatAcknowledgement: "Sure, I'll repeat the question.",
+        thankYou: 'Thank you.',
+        whyPrompt: 'Let me know if you want me to repeat it, or go ahead and answer.',
+        handoffPrompt: 'I want to make sure we get this right. I can connect you to an agent, or we can move forward here. What do you prefer?',
+        moveOnNext: "Let's move on to the next question.",
+        retryEscalation: " Let's try once more.",
+        bridgeOptions: [
+          "That's why we ask.",
+          'I appreciate you asking.',
+          'Thanks for checking on that.',
+          'That context helps.',
+        ],
+        genericExplanation: {
+          yes_no: 'Please answer with a clear yes or no.',
+          date: 'Please provide a date.',
+          number: 'Please provide a number.',
+          choice: 'Please choose one of the options.',
+          open: 'Please provide a valid response.',
+        },
+      },
+      es: {
+        title: 'Cuestionario de seguro validado por IA',
+        headerSubtitle: 'Prototipo de aplicación de voz con inteligencia artificial',
+        headerTitle: 'Cuestionario de historial médico',
+        headerTagline: 'Solicitud de seguro',
+        progressLabel: 'Progreso',
+        questionCount: (current, total) => `Pregunta ${current} de ${total}`,
+        readyTitle: 'Listo para comenzar',
+        readyDescription: 'Este cuestionario le hará preguntas sobre su historial médico mediante interacción por voz. Por favor, asegúrese de estar en un entorno tranquilo y hable con claridad.',
+        startButton: 'Iniciar aplicación',
+        unsupportedAsr: 'El reconocimiento de voz no es compatible con este navegador. Use Chrome o Edge.',
+        speakingLabel: 'Hablando',
+        speakingSub: 'Por favor, escuche la pregunta.',
+        listeningLabel: 'Escuchando',
+        listeningSub: 'Por favor, diga su respuesta con claridad.',
+        validatingLabel: 'Procesando',
+        validatingSub: 'Analizando su respuesta con IA.',
+        yesNoHint: 'Por favor, responda sí o no.',
+        optionsLabel: 'Opciones',
+        retryLabel: (current, total) => `Intento ${current} de ${total}`,
+        endCallButton: 'Finalizar llamada',
+        completionTitle: 'Solicitud completada',
+        completionDescription: 'Gracias por completar el cuestionario. Sus respuestas han sido registradas.',
+        summaryTitle: 'Resumen de respuestas',
+        summaryEmpty: 'No hay respuestas registradas',
+        followupLabel: (index) => `Seguimiento ${index}:`,
+        restartButton: 'Iniciar nueva solicitud',
+        handoffTitle: 'Transferencia a agente solicitada',
+        handoffDescription: 'Podemos conectarlo con un agente para terminar esta pregunta.',
+        handoffRestartButton: 'Comenzar de nuevo',
+        chatAssistantName: 'Asistente de suscripción',
+        chatSubtitle: 'Transcripción de la demostración en vivo',
+        chatEmpty: 'La conversación aparecerá aquí.',
+        voiceModeEnabled: 'Modo de voz habilitado',
+        transcriptLabel: (count) => `Transcripción (${count})`,
+        transcriptUser: 'Usuario',
+        transcriptSystem: 'Sistema',
+        languageLabel: 'Idioma',
+        introMessage: 'Hola y gracias por elegir Protective Life. Durante esta llamada telefónica le haré varias preguntas sobre su estilo de vida y salud. Esta información nos ayudará con su solicitud de seguro de vida.',
+        completionMessage: 'Gracias por elegir Protective Life. Sus respuestas han sido registradas.',
+        whyFallback: 'Esto nos ayuda a entender su historial médico para su solicitud.',
+        medicalConditionsAnnouncement: 'Ahora repasaremos algunas condiciones médicas específicas. Por favor, hágame saber si ha tenido alguna de las condiciones para que podamos obtener información adicional cuando sea necesario.',
+        noResponseRetry: 'No escuché nada. Permítame repetir la pregunta.',
+        noResponseMoveOn: 'Estoy teniendo problemas para escucharle. Sigamos adelante.',
+        repeatAcknowledgement: 'Claro, repetiré la pregunta.',
+        thankYou: 'Gracias.',
+        whyPrompt: 'Dígame si quiere que la repita o puede responder.',
+        handoffPrompt: 'Quiero asegurarme de que lo hagamos bien. Puedo conectarlo con un agente, o podemos continuar aquí. ¿Qué prefiere?',
+        moveOnNext: 'Pasemos a la siguiente pregunta.',
+        retryEscalation: ' Intentemos una vez más.',
+        bridgeOptions: [
+          'Por eso lo preguntamos.',
+          'Gracias por preguntar.',
+          'Gracias por comprobarlo.',
+          'Ese contexto ayuda.',
+        ],
+        genericExplanation: {
+          yes_no: 'Por favor, responda con un sí o un no.',
+          date: 'Por favor, proporcione una fecha.',
+          number: 'Por favor, proporcione un número.',
+          choice: 'Por favor, elija una de las opciones.',
+          open: 'Por favor, proporcione una respuesta válida.',
+        },
+      },
+    };
 
-    const COMPLETION_MESSAGE = 
-      "Thank you for choosing Protective Life. " +
-      "Your responses have been recorded. ";
+    const SECTION_TRANSLATIONS = {
+      es: {
+        'Welcome': 'Bienvenida',
+        'Primary Medical Provider': 'Proveedor médico primario',
+        'Cardiovascular': 'Cardiovascular',
+      },
+    };
+
+    const QUESTION_TRANSLATIONS = {
+      es: {
+        'cust_id_first_name': '¿Puedo tener su primer nombre?',
+        'cust_id_last_name': '¿Puedo tener su apellido?',
+        'pmv.has_primary_provider': '¿Tiene un proveedor médico primario?',
+        'pmv.last_visit_reason': '¿Cuál fue el motivo de su última visita o consulta con su proveedor médico primario?',
+        'pmv.last_visit_date': '¿Cuándo fue esta visita?',
+        'pmv.last_visit_results': '¿Cuáles fueron los resultados?',
+        'pmv.last_visit_treatment': '¿Qué tratamiento o medicamentos le recetaron?',
+        'pmv.last_visit_provider_name': '¿Sabe el nombre del proveedor médico que vio para este chequeo?',
+        'cardio.gateway': '¿Tiene algún trastorno o enfermedad del corazón, vasos sanguíneos o sistema circulatorio (incluyendo presión arterial alta/colesterol alto)?',
+        'cardio.dx': '¿Qué diagnósticos aplican? (hipertensión, hiperlipidemia, enfermedad arterial coronaria, arritmia)',
+        'cardio.dx_date': '¿Cuándo se diagnosticó la condición?',
+        'cardio.bp_known': '¿Sabe su lectura de presión arterial más reciente?',
+        'cardio.bp_sys': '¿Presión arterial sistólica más reciente (número superior)?',
+        'cardio.bp_dia': '¿Presión arterial diastólica más reciente (número inferior)?',
+        'cardio.control_duration': '¿Cuánto tiempo han estado controladas las lecturas aproximadamente al nivel actual?',
+        'cardio.on_meds': '¿Está tomando medicamento para esta condición?',
+        'cardio.provider_name': '¿Sabe el nombre del proveedor médico que vio para esta condición?',
+      },
+    };
+
+    function normalizeLanguage(lang) {
+      return LANGUAGE_OPTIONS[lang] ? lang : DEFAULT_LANGUAGE;
+    }
+
+    function getLanguageConfig(lang) {
+      return LANGUAGE_OPTIONS[normalizeLanguage(lang)];
+    }
+
+    function getStrings(lang) {
+      return UI_STRINGS[normalizeLanguage(lang)];
+    }
+
+    function getSectionLabel(section, lang) {
+      const translations = SECTION_TRANSLATIONS[normalizeLanguage(lang)] || {};
+      return translations[section] || section;
+    }
+
+    function getQuestionText(question, lang) {
+      const translations = QUESTION_TRANSLATIONS[normalizeLanguage(lang)] || {};
+      return translations[question.id] || question.question;
+    }
 
     const MAX_RETRIES = 3;
     const MAX_EXPLAINS = 2;
@@ -240,10 +421,15 @@
     // ============================================================================
     
     class TTSService {
-      constructor() {
+      constructor(lang = 'en-US') {
         this.audioContext = null;
         this.currentSource = null;
         this.isSpeaking = false;
+        this.lang = lang;
+      }
+
+      setLanguage(lang) {
+        this.lang = lang;
       }
 
       async speak(text) {
@@ -302,6 +488,7 @@
         return new Promise((resolve) => {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = this.lang;
           utterance.rate = 0.9;
           utterance.pitch = 1;
           utterance.onend = resolve;
@@ -325,15 +512,23 @@
     // ============================================================================
     
     class ASRService {
-      constructor() {
+      constructor(lang = 'en-US') {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        this.lang = lang;
         
         if (this.recognition) {
           this.recognition.continuous = false;
           this.recognition.interimResults = false;
-          this.recognition.lang = 'en-US';
+          this.recognition.lang = this.lang;
           this.recognition.maxAlternatives = 1;
+        }
+      }
+
+      setLanguage(lang) {
+        this.lang = lang;
+        if (this.recognition) {
+          this.recognition.lang = lang;
         }
       }
 
@@ -388,6 +583,7 @@
             }
           }, timeoutMs);
 
+          this.recognition.lang = this.lang;
           this.recognition.start();
         });
       }
@@ -425,7 +621,7 @@
     }
 
     class WhyService {
-      async explain(question, section, explainLevel = 1, previousExplanation = null) {
+      async explain(question, section, explainLevel = 1, previousExplanation = null, fallbackExplanation = null) {
         try {
           const response = await fetch('/api/why', {
             method: 'POST',
@@ -440,7 +636,7 @@
           return await response.json();
         } catch (error) {
           console.error('Why explanation error:', error);
-          return { explanation: 'This helps us understand your medical history for your application.' };
+          return { explanation: fallbackExplanation || 'This helps us understand your medical history for your application.' };
         }
       }
     }
@@ -490,13 +686,6 @@
     
     class FlowController {
       constructor() {
-        this.tts = new TTSService();
-        this.asr = new ASRService();
-        this.validator = new ValidationService();
-        this.why = new WhyService();
-        this.followup = new FollowupService();
-        this.sessionId = 0;
-        
         this.state = {
           status: 'idle',
           currentQuestionIndex: -1,
@@ -509,14 +698,41 @@
           followups: {},
           pendingAssistantMessage: null,
           error: null,
+          language: DEFAULT_LANGUAGE,
         };
+
+        const languageConfig = getLanguageConfig(this.state.language);
+        this.tts = new TTSService(languageConfig.ttsLang);
+        this.asr = new ASRService(languageConfig.asrLang);
+        this.validator = new ValidationService();
+        this.why = new WhyService();
+        this.followup = new FollowupService();
+        this.sessionId = 0;
         
         this.onStateChange = null;
+
+        this.applyLanguage(this.state.language);
       }
 
       setState(updates) {
         this.state = { ...this.state, ...updates };
         if (this.onStateChange) this.onStateChange(this.state);
+      }
+
+      applyLanguage(lang) {
+        const normalized = normalizeLanguage(lang);
+        const config = getLanguageConfig(normalized);
+        this.tts.setLanguage(config.ttsLang);
+        this.asr.setLanguage(config.asrLang);
+        document.documentElement.lang = config.htmlLang;
+        document.title = getStrings(normalized).title;
+      }
+
+      setLanguage(lang) {
+        const normalized = normalizeLanguage(lang);
+        if (this.state.language === normalized) return;
+        this.applyLanguage(normalized);
+        this.setState({ language: normalized });
       }
 
       recordUserAnswer(text) {
@@ -609,12 +825,12 @@
         return pairs;
       }
 
-      getUpcomingQuestionTexts(fromIndex, limit = 4) {
+      getUpcomingQuestionTexts(fromIndex, limit = 4, language = this.state.language) {
         const upcoming = [];
         for (let i = fromIndex + 1; i < QUESTIONS.length && upcoming.length < limit; i += 1) {
           const nextQuestion = QUESTIONS[i];
           if (nextQuestion && nextQuestion.question) {
-            upcoming.push(nextQuestion.question);
+            upcoming.push(getQuestionText(nextQuestion, language));
           }
         }
         return upcoming;
@@ -663,9 +879,10 @@
       async askQuestion(questionIndex, options = {}) {
         const { preserveRetryCount = false, retryCountOverride = null } = options;
         const sessionId = this.sessionId;
+        const strings = getStrings(this.state.language);
         if (questionIndex < 0 || questionIndex >= QUESTIONS.length) {
           this.setState({ status: 'speaking', currentQuestionIndex: -1 });
-          await this.speakAssistant(COMPLETION_MESSAGE, sessionId);
+          await this.speakAssistant(strings.completionMessage, sessionId);
           if (this.sessionId !== sessionId) return;
           this.setState({ status: 'complete' });
           return;
@@ -674,6 +891,8 @@
         const shouldResetWhy = questionIndex !== this.state.currentQuestionIndex;
         const shouldResetRetry = questionIndex !== this.state.currentQuestionIndex;
         const question = QUESTIONS[questionIndex];
+        const language = this.state.language;
+        const questionText = getQuestionText(question, language);
         this.setState({ 
           status: 'speaking', 
           currentQuestionIndex: questionIndex,
@@ -692,7 +911,7 @@
         // }
 
         // Announce the Medical Conditions related questions
-        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
+        const Medical_Conditions_Message = strings.medicalConditionsAnnouncement;
         if (questionIndex === 8 && !this.state.announcementsPlayed.medicalConditions) {
           this.setState({ showQuestionText: false });
           await this.speakAssistant(Medical_Conditions_Message, sessionId);
@@ -705,7 +924,7 @@
         }
 
         this.setState({ showQuestionText: true });
-        await this.speakAssistant(question.question, sessionId);
+        await this.speakAssistant(questionText, sessionId);
         if (this.sessionId !== sessionId) return;
 
         this.setState({ status: 'listening', pendingAssistantMessage: null });
@@ -718,11 +937,11 @@
             if (this.state.retryCount < MAX_RETRIES) {
               const nextRetry = this.state.retryCount + 1;
               this.setState({ retryCount: nextRetry });
-              await this.speakAssistant("I didn't hear anything. Let me repeat the question.", sessionId);
+              await this.speakAssistant(strings.noResponseRetry, sessionId);
               if (this.sessionId !== sessionId) return;
               return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: nextRetry });
             } else {
-              await this.speakAssistant("I'm having trouble hearing you. Let's move on.", sessionId);
+              await this.speakAssistant(strings.noResponseMoveOn, sessionId);
               if (this.sessionId !== sessionId) return;
               this.state.answers[question.id] = 'NO_RESPONSE';
               return this.advanceToNextQuestion(questionIndex, 'NO_RESPONSE');
@@ -738,7 +957,7 @@
           this.recordUserAnswer(transcriptAnswer);
           
           if (this.isRepeatRequest(spokenAnswer)) {
-            const acknowledgement = "Sure, I'll repeat the question.";
+            const acknowledgement = strings.repeatAcknowledgement;
             this.setState({ status: 'speaking' });
             await this.speakAssistant(acknowledgement, sessionId);
             if (this.sessionId !== sessionId) return;
@@ -755,7 +974,7 @@
               this.state.answers[question.id] = genderValue;
               this.setState({ status: 'speaking' });
               this.replaceLastUserTranscript(this.ensureTranscriptPeriod(genderValue));
-              await this.speakAssistant("Thank you.", sessionId);
+              await this.speakAssistant(strings.thankYou, sessionId);
               if (this.sessionId !== sessionId) return;
               return this.advanceToNextQuestion(questionIndex, genderValue);
             }
@@ -812,6 +1031,27 @@
           'say that',
           'say it',
         ];
+        if (this.state.language === 'es') {
+          patterns.push(
+            'repite',
+            'repita',
+            'repetir',
+            'puede repetir',
+            'podria repetir',
+            'podrías repetir',
+            'otra vez',
+            'de nuevo',
+            'que dijiste',
+            'qué dijiste',
+            'que fue eso',
+            'qué fue eso',
+            'perdon',
+            'perdón',
+            'disculpa',
+            'disculpe',
+            'repita por favor'
+          );
+        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -819,16 +1059,26 @@
         if (!text) return null;
         const trimmed = text.trim();
         const lowered = trimmed.toLowerCase().replace(/[^a-z]/g, '');
-        if (['male', 'mail', 'man', 'm'].includes(lowered)) {
+        const malePatterns = ['male', 'mail', 'man', 'm'];
+        const femalePatterns = ['female', 'femail', 'woman', 'f'];
+        const nonBinaryPatterns = ['nonbinary', 'nb'];
+        const otherPatterns = ['other', 'prefernot', 'na'];
+        if (this.state.language === 'es') {
+          malePatterns.push('hombre', 'masculino', 'varon');
+          femalePatterns.push('mujer', 'femenino');
+          nonBinaryPatterns.push('nobinario');
+          otherPatterns.push('otro');
+        }
+        if (malePatterns.includes(lowered)) {
           return 'Male';
         }
-        if (['female', 'femail', 'woman', 'f'].includes(lowered)) {
+        if (femalePatterns.includes(lowered)) {
           return 'Female';
         }
-        if (['nonbinary', 'nb'].includes(lowered)) {
+        if (nonBinaryPatterns.includes(lowered)) {
           return 'Non-binary';
         }
-        if (['other', 'prefernot', 'na'].includes(lowered)) {
+        if (otherPatterns.includes(lowered)) {
           return 'Other';
         }
         return null;
@@ -853,6 +1103,19 @@
           /^i understand\b[\s,.-]*/i,
           /^that makes sense\b[\s,.-]*/i,
         ];
+        if (this.state.language === 'es') {
+          patterns.push(
+            /^sí\b[\s,.-]*/i,
+            /^si\b[\s,.-]*/i,
+            /^claro\b[\s,.-]*/i,
+            /^vale\b[\s,.-]*/i,
+            /^de acuerdo\b[\s,.-]*/i,
+            /^gracias\b[\s,.-]*/i,
+            /^bueno\b[\s,.-]*/i,
+            /^entiendo\b[\s,.-]*/i,
+            /^tiene sentido\b[\s,.-]*/i
+          );
+        }
 
         for (const pattern of patterns) {
           if (pattern.test(trimmed)) {
@@ -893,6 +1156,33 @@
           'why',
           'explain',
         ];
+        if (this.state.language === 'es') {
+          patterns.push(
+            'por que',
+            'por qué',
+            'por que pregunta',
+            'por qué pregunta',
+            'por que me pregunta',
+            'por qué me pregunta',
+            'por que necesita',
+            'por qué necesita',
+            'por que necesita saber',
+            'por qué necesita saber',
+            'para que es esto',
+            'para qué es esto',
+            'para que es esta pregunta',
+            'para qué es esta pregunta',
+            'puede explicar',
+            'podria explicar',
+            'podría explicar',
+            'explique',
+            'explica',
+            'explicame',
+            'explícame',
+            'ayudeme a entender',
+            'ayúdeme a entender'
+          );
+        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -907,6 +1197,18 @@
           'human',
           'connect me',
         ];
+        if (this.state.language === 'es') {
+          patterns.push(
+            'agente',
+            'representante',
+            'hablar con una persona',
+            'hablar con alguien',
+            'hablar con un humano',
+            'persona',
+            'humano',
+            'conectar'
+          );
+        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -919,20 +1221,30 @@
           'let\'s continue',
           'ready',
         ];
+        if (this.state.language === 'es') {
+          patterns.push(
+            'continuar',
+            'continua',
+            'sigamos',
+            'seguir',
+            'sigue',
+            'adelante',
+            'vamos a continuar',
+            'listo',
+            'lista'
+          );
+        }
         return patterns.some((p) => normalized.includes(p));
       }
 
       getBridgeText(index) {
-        const options = [
-          "That's why we ask.",
-          "I appreciate you asking.",
-          "Thanks for checking on that.",
-          "That context helps.",
-        ];
+        const strings = getStrings(this.state.language);
+        const options = strings.bridgeOptions;
         return options[index % options.length];
       }
 
       async handleWhy(questionIndex, question, sessionId) {
+        const strings = getStrings(this.state.language);
         const currentCount = this.state.explainCounts[question.id] || 0;
         const nextCount = currentCount + 1;
         const explainCounts = { ...this.state.explainCounts, [question.id]: nextCount };
@@ -943,18 +1255,21 @@
         }
 
         this.setState({ status: 'validating' });
+        const questionText = getQuestionText(question, this.state.language);
+        const sectionLabel = getSectionLabel(question.section, this.state.language);
         const whyResponse = await this.why.explain(
-          question.question,
-          question.section,
+          questionText,
+          sectionLabel,
           nextCount,
-          this.state.lastWhyExplanation || null
+          this.state.lastWhyExplanation || null,
+          strings.whyFallback
         );
         if (this.sessionId !== sessionId) return;
 
-        const explanation = whyResponse.explanation || 'This helps us understand your medical history for your application.';
+        const explanation = whyResponse.explanation || strings.whyFallback;
         this.setState({ lastWhyExplanation: explanation });
         const bridge = this.getBridgeText(nextCount - 1);
-        const prompt = "Let me know if you want me to repeat it, or go ahead and answer.";
+        const prompt = strings.whyPrompt;
         const combined = `${explanation} ${bridge} ${prompt}`;
 
         this.setState({ status: 'speaking' });
@@ -988,7 +1303,8 @@
       }
 
       async handleHandoff(questionIndex, question, sessionId) {
-        const handoffMessage = "I want to make sure we get this right. I can connect you to an agent, or we can move forward here. What do you prefer?";
+        const strings = getStrings(this.state.language);
+        const handoffMessage = strings.handoffPrompt;
         this.setState({ status: 'speaking' });
         await this.speakAssistant(handoffMessage, sessionId);
         if (this.sessionId !== sessionId) return;
@@ -1026,8 +1342,10 @@
 
       async handleValidation(questionIndex, question, spokenAnswer, sessionId) {
         this.setState({ status: 'validating' });
+        const strings = getStrings(this.state.language);
+        const questionText = getQuestionText(question, this.state.language);
         const validation = await this.validator.validate(
-          question.question,
+          questionText,
           question.type,
           spokenAnswer,
           question.choices
@@ -1035,7 +1353,7 @@
         if (this.sessionId !== sessionId) return;
 
         if (validation.repeat) {
-          const acknowledgement = "Sure, I'll repeat the question.";
+          const acknowledgement = strings.repeatAcknowledgement;
           this.setState({ status: 'speaking' });
           await this.speakAssistant(acknowledgement, sessionId);
           if (this.sessionId !== sessionId) return;
@@ -1048,7 +1366,7 @@
               this.setState({ retryCount: retryNum });
 
             const explanation = validation.explanation || this.getGenericExplanation(question.type);
-            const escalation = retryNum === 2 ? " Let's try once more." : "";
+            const escalation = retryNum === 2 ? strings.retryEscalation : "";
             const clarification = explanation + escalation;
 
               await this.speakAssistant(clarification, sessionId);
@@ -1056,7 +1374,7 @@
               return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: retryNum });
             }
 
-          await this.speakAssistant("Let's move on to the next question.", sessionId);
+          await this.speakAssistant(strings.moveOnNext, sessionId);
           if (this.sessionId !== sessionId) return;
           this.state.answers[question.id] = spokenAnswer;
           return this.advanceToNextQuestion(questionIndex, spokenAnswer);
@@ -1082,26 +1400,16 @@
           if (this.sessionId !== sessionId) return;
         }
 
-        await this.speakAssistant("Thank you.", sessionId);
+        await this.speakAssistant(strings.thankYou, sessionId);
         if (this.sessionId !== sessionId) return;
 
         this.advanceToNextQuestion(questionIndex, cleanedAnswer);
       }
 
       getGenericExplanation(questionType) {
-        switch (questionType) {
-          case 'yes_no':
-            return 'Please answer with a clear yes or no.';
-          case 'date':
-            return 'Please provide a date.';
-          case 'number':
-            return 'Please provide a number.';
-          case 'choice':
-            return 'Please choose one of the options.';
-          case 'open':
-          default:
-            return 'Please provide a valid response.';
-        }
+        const strings = getStrings(this.state.language);
+        const defaults = strings.genericExplanation;
+        return defaults[questionType] || defaults.open;
       }
 
       advanceToNextQuestion(currentIndex, answer) {
@@ -1120,6 +1428,7 @@
       async start() {
         this.sessionId += 1;
         const sessionId = this.sessionId;
+        const language = this.state.language;
         this.setState({
           status: 'speaking',
           currentQuestionIndex: -1,
@@ -1132,9 +1441,11 @@
           followups: {},
           pendingAssistantMessage: null,
           error: null,
+          language,
         });
 
-        await this.speakAssistant(INTRO_MESSAGE, sessionId);
+        const strings = getStrings(language);
+        await this.speakAssistant(strings.introMessage, sessionId);
         if (this.sessionId !== sessionId) return;
 
         const firstIndex = this.findNextQuestionIndex(0, {});
@@ -1158,19 +1469,24 @@
         let count = existing.count;
         let items = [...existing.items];
         const retryLimit = Number.isInteger(followupConfig.retryLimit) ? followupConfig.retryLimit : MAX_RETRIES;
+        const language = this.state.language;
+        const sectionLabel = getSectionLabel(question.section, language);
+        const questionText = getQuestionText(question, language);
         const resolvedIndex = Number.isInteger(questionIndex)
           ? questionIndex
           : QUESTIONS.findIndex((q) => q.id === question.id);
         const upcomingQuestions = resolvedIndex >= 0
-          ? this.getUpcomingQuestionTexts(resolvedIndex)
+          ? this.getUpcomingQuestionTexts(resolvedIndex, 4, language)
           : [];
 
         while (count < followupConfig.max) {
           const followupRequest = {
-            context: 'Life insurance intake for underwriting risk assessment.',
-            section: question.section,
+            context: language === 'es'
+              ? 'Life insurance intake for underwriting risk assessment. Respond in Spanish.'
+              : 'Life insurance intake for underwriting risk assessment.',
+            section: sectionLabel,
             questionId: question.id,
-            questionText: question.question,
+            questionText,
             lastAnswer,
             priorAnswers: this.getRecentUserAnswers(5),
             recentQAPairs: this.getRecentQuestionAnswerPairs(4),
@@ -1178,7 +1494,7 @@
             primaryContext: this.state.answers['pmv.last_visit_reason']
               ? { id: 'pmv.last_visit_reason', answer: this.state.answers['pmv.last_visit_reason'] }
               : null,
-            topic: followupConfig.topic || question.section,
+            topic: followupConfig.topic || sectionLabel,
             guidance: followupConfig.guidance || null,
             previousFollowups: this.getPreviousFollowupQuestions(question.id),
             upcomingQuestions,
@@ -1229,6 +1545,7 @@
       async collectFollowupAnswer(questionText, retryLimit, sessionId) {
         let attempts = 0;
         let lastResponse = '';
+        const strings = getStrings(this.state.language);
 
         while (true) {
           this.setState({ status: 'listening', pendingAssistantMessage: null });
@@ -1238,7 +1555,7 @@
           if (!response) {
             if (attempts < retryLimit) {
               this.setState({ status: 'speaking' });
-              await this.speakAssistant("I didn't hear anything. Let me repeat the question.", sessionId);
+              await this.speakAssistant(strings.noResponseRetry, sessionId);
               if (this.sessionId !== sessionId) return null;
               await this.speakAssistant(questionText, sessionId);
               if (this.sessionId !== sessionId) return null;
@@ -1286,11 +1603,35 @@
     
     const controller = new FlowController();
 
+    function renderLanguageSelect(state, strings) {
+      const normalized = normalizeLanguage(state.language);
+      const isDisabled = state.status !== 'idle';
+      const disabledClass = isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer';
+      const options = Object.entries(LANGUAGE_OPTIONS)
+        .map(([key, config]) => `
+          <option value="${key}" ${key === normalized ? 'selected' : ''}>${config.label}</option>
+        `)
+        .join('');
+
+      return `
+        <label class="flex items-center gap-2 text-xs font-semibold text-[var(--brand-text-secondary)]">
+          <span>${strings.languageLabel}</span>
+          <select id="languageSelect"
+                  class="border border-[var(--brand-border)] rounded-md bg-white px-2 py-1 text-[var(--brand-text)] ${disabledClass}"
+                  ${isDisabled ? 'disabled' : ''}>
+            ${options}
+          </select>
+        </label>
+      `;
+    }
+
     function render(state) {
       const app = document.getElementById('app');
       const question = state.currentQuestionIndex >= 0 && state.currentQuestionIndex < QUESTIONS.length
         ? QUESTIONS[state.currentQuestionIndex]
         : null;
+      const strings = getStrings(state.language);
+      const sectionLabel = question ? getSectionLabel(question.section, state.language) : '';
       
       const progress = state.currentQuestionIndex >= 0
         ? Math.min(100, Math.round(((state.currentQuestionIndex + 1) / QUESTIONS.length) * 100))
@@ -1302,7 +1643,10 @@
           <div class="bg-white border-b border-[var(--brand-border)] px-6 py-2">
             <div class="max-w-6xl mx-auto flex items-center justify-between text-[var(--brand-primary)] text-sm font-semibold">
               <span>Protective Life</span>
-              <span>AI Voice Application Prototype</span>
+              <div class="flex items-center gap-4">
+                <span>${strings.headerSubtitle}</span>
+                ${renderLanguageSelect(state, strings)}
+              </div>
             </div>
           </div>
           <div class="bg-[var(--brand-primary)] px-6 py-4">
@@ -1310,14 +1654,14 @@
               <div class="flex items-center gap-4">
                 <img src="logo.svg" alt="Protective Life logo" class="h-8 w-auto" />
                 <div>
-                  <h1 class="text-xl font-bold">Medical History Questionnaire</h1>
-                  <p class="text-sm text-white/80">Insurance Application</p>
+                  <h1 class="text-xl font-bold">${strings.headerTitle}</h1>
+                  <p class="text-sm text-white/80">${strings.headerTagline}</p>
                 </div>
               </div>
               ${state.status !== 'idle' && state.status !== 'complete' && question ? `
                 <div class="text-right">
-                  <div class="text-sm font-semibold">${question.section}</div>
-                  <div class="text-xs text-white/70">Question ${state.currentQuestionIndex + 1} of ${QUESTIONS.length}</div>
+                  <div class="text-sm font-semibold">${sectionLabel}</div>
+                  <div class="text-xs text-white/70">${strings.questionCount(state.currentQuestionIndex + 1, QUESTIONS.length)}</div>
                 </div>
               ` : ''}
             </div>
@@ -1329,7 +1673,7 @@
           <div class="bg-white px-6 py-2 border-b border-[var(--brand-border)]">
             <div class="max-w-6xl mx-auto">
               <div class="flex justify-between text-xs text-[var(--brand-text-secondary)] mb-1">
-                <span>Progress</span>
+                <span>${strings.progressLabel}</span>
                 <span>${progress}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-1.5">
@@ -1344,12 +1688,12 @@
         <main class="max-w-6xl mx-auto px-6 py-12">
           <div class="flex gap-8">
             <div class="flex-1">
-              ${state.status === 'idle' ? renderIdle(state) : ''}
-              ${['speaking', 'listening', 'validating'].includes(state.status) ? renderActive(state, question) : ''}
-              ${state.status === 'handoff' ? renderHandoff() : ''}
-              ${state.status === 'complete' ? renderComplete(state) : ''}
+              ${state.status === 'idle' ? renderIdle(state, strings) : ''}
+              ${['speaking', 'listening', 'validating'].includes(state.status) ? renderActive(state, question, strings) : ''}
+              ${state.status === 'handoff' ? renderHandoff(strings) : ''}
+              ${state.status === 'complete' ? renderComplete(state, strings) : ''}
             </div>
-            ${['idle', 'complete', 'handoff'].includes(state.status) ? '' : renderChatFeed(state)}
+            ${['idle', 'complete', 'handoff'].includes(state.status) ? '' : renderChatFeed(state, strings)}
           </div>
         </main>
       `;
@@ -1357,6 +1701,9 @@
       // Event handlers
       document.getElementById('startBtn')?.addEventListener('click', () => controller.start());
       document.getElementById('endBtn')?.addEventListener('click', () => controller.stop());
+      document.getElementById('languageSelect')?.addEventListener('change', (event) => {
+        controller.setLanguage(event.target.value);
+      });
       document.getElementById('restartBtn')?.addEventListener('click', () => {
         controller.state = { ...controller.state, status: 'idle' };
         render(controller.state);
@@ -1368,7 +1715,7 @@
       }
     }
 
-    function renderIdle(state) {
+    function renderIdle(state, strings) {
       const isSupported = new ASRService().isSupported();
 
       return `
@@ -1380,10 +1727,9 @@
                       d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </div>
-            <h2 class="text-3xl font-bold mb-4">Ready to Begin</h2>
+            <h2 class="text-3xl font-bold mb-4">${strings.readyTitle}</h2>
             <p class="text-[var(--brand-text-secondary)] mb-8 max-w-lg mx-auto leading-relaxed">
-              This questionnaire will ask about your medical history using voice interaction. 
-              Please ensure you're in a quiet environment and speak clearly.
+              ${strings.readyDescription}
             </p>
           </div>
 
@@ -1391,13 +1737,13 @@
                   class="px-10 py-4 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          rounded-full text-lg font-semibold text-white transition-all shadow-xl 
                          hover:scale-105">
-            Start Application
+            ${strings.startButton}
           </button>
 
           ${!isSupported ? `
             <div class="mt-6 p-4 bg-white border border-[var(--brand-border)] rounded-xl max-w-md mx-auto shadow-xl">
               <p class="text-[var(--brand-text-secondary)] text-sm">
-                ⚠️ Voice recognition is not supported in this browser. Please use Chrome or Edge.
+                ${strings.unsupportedAsr}
               </p>
             </div>
           ` : ''}
@@ -1412,29 +1758,30 @@
       `;
     }
 
-    function renderActive(state, question) {
+    function renderActive(state, question, strings) {
       const configs = {
         speaking: {
           color: 'bg-[var(--brand-primary)]',
           shadow: 'shadow-xl',
-          label: 'Speaking',
-          sublabel: 'Please listen to the question',
+          label: strings.speakingLabel,
+          sublabel: strings.speakingSub,
         },
         listening: {
           color: 'bg-[var(--brand-secondary)]',
           shadow: 'shadow-xl',
-          label: 'Listening',
-          sublabel: 'Please speak your answer clearly',
+          label: strings.listeningLabel,
+          sublabel: strings.listeningSub,
         },
         validating: {
           color: 'bg-[var(--brand-highlight)]',
           shadow: 'shadow-xl',
-          label: 'Processing',
-          sublabel: 'Analyzing your response with AI',
+          label: strings.validatingLabel,
+          sublabel: strings.validatingSub,
         },
       };
       
       const cfg = configs[state.status];
+      const questionText = question ? getQuestionText(question, state.language) : '';
 
       return `
         <div class="text-center">
@@ -1465,31 +1812,31 @@
           <!-- Current Question -->
           ${question && state.showQuestionText !== false ? `
             <div class="bg-white rounded-xl p-8 mb-10 max-w-2xl mx-auto border-t-4 border-[var(--brand-primary)] shadow-xl">
-              <p class="text-xl leading-relaxed">${question.question}</p>
+              <p class="text-xl leading-relaxed">${questionText}</p>
               ${question.type === 'yes_no' ? `
-                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">Please answer yes or no</p>
+                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">${strings.yesNoHint}</p>
               ` : ''}
               ${question.type === 'choice' && question.choices ? `
-                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">Options: ${question.choices.join(', ')}</p>
+                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">${strings.optionsLabel}: ${question.choices.join(', ')}</p>
               ` : ''}
             </div>
           ` : ''}
 
           <!-- Retry indicator -->
           ${state.retryCount > 0 ? `
-            <p class="text-[var(--brand-text-secondary)] text-sm mb-6">Attempt ${state.retryCount + 1} of ${MAX_RETRIES + 1}</p>
+            <p class="text-[var(--brand-text-secondary)] text-sm mb-6">${strings.retryLabel(state.retryCount + 1, MAX_RETRIES + 1)}</p>
           ` : ''}
 
           <!-- End Call Button -->
           <button id="endBtn" 
                   class="px-8 py-3 bg-white text-red-600 border border-red-300 hover:border-red-400 rounded-full font-semibold transition-colors shadow-sm">
-            End Call
+            ${strings.endCallButton}
           </button>
         </div>
       `;
     }
 
-    function renderComplete(state) {
+    function renderComplete(state, strings) {
       const summaryItems = Object.entries(state.answers).map(([id, answer]) => {
         const q = QUESTIONS.find(q => q.id === id);
         const followupItems = state.followups?.[id]?.items || [];
@@ -1498,7 +1845,7 @@
             <div class="mt-3 space-y-2">
               ${followupItems.map((item, index) => `
                 <div class="text-xs text-[var(--brand-text-secondary)]">
-                  <div class="font-semibold">Follow-up ${index + 1}:</div>
+                  <div class="font-semibold">${strings.followupLabel(index + 1)}</div>
                   <div>${item.q}</div>
                   <div class="text-[var(--brand-text)]">${item.a}</div>
                 </div>
@@ -1509,7 +1856,7 @@
         return `
           <div class="flex justify-between py-3 border-b border-gray-200 last:border-0">
             <span class="text-[var(--brand-text-secondary)] text-sm flex-1 pr-4">
-              ${q?.question || id}
+              ${q ? getQuestionText(q, state.language) : id}
               ${followupHtml}
             </span>
             <span class="font-medium text-sm text-right max-w-[200px]">${answer}</span>
@@ -1525,29 +1872,29 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 class="text-3xl font-bold mb-4">Application Complete</h2>
+          <h2 class="text-3xl font-bold mb-4">${strings.completionTitle}</h2>
           <p class="text-[var(--brand-text-secondary)] mb-10 max-w-lg mx-auto">
-            Thank you for completing the questionnaire. Your responses have been recorded.
+            ${strings.completionDescription}
           </p>
 
           <!-- Summary -->
           <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto text-left border-t-4 border-[var(--brand-primary)] shadow-xl">
-            <h3 class="font-semibold mb-4 text-lg">Response Summary</h3>
+            <h3 class="font-semibold mb-4 text-lg">${strings.summaryTitle}</h3>
             <div class="max-h-96 overflow-y-auto">
-              ${summaryItems || '<p class="text-[var(--brand-text-secondary)]">No responses recorded</p>'}
+              ${summaryItems || `<p class="text-[var(--brand-text-secondary)]">${strings.summaryEmpty}</p>`}
             </div>
           </div>
 
           <button id="restartBtn" 
                   class="mt-10 px-8 py-3 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          text-white rounded-full font-semibold transition-all shadow-xl">
-            Start New Application
+            ${strings.restartButton}
           </button>
         </div>
       `;
     }
 
-    function renderHandoff() {
+    function renderHandoff(strings) {
       return `
         <div class="text-center">
           <div class="w-32 h-32 mx-auto bg-[var(--brand-primary)] rounded-full 
@@ -1556,24 +1903,24 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 class="text-3xl font-bold mb-4">Agent Handoff Requested</h2>
+          <h2 class="text-3xl font-bold mb-4">${strings.handoffTitle}</h2>
           <p class="text-[var(--brand-text-secondary)] mb-10 max-w-lg mx-auto">
-            We can connect you with an agent to finish this question.
+            ${strings.handoffDescription}
           </p>
           <button id="restartBtn" 
                   class="mt-4 px-8 py-3 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          text-white rounded-full font-semibold transition-all shadow-xl">
-            Start Over
+            ${strings.handoffRestartButton}
           </button>
         </div>
       `;
     }
 
-    function renderTranscript(state) {
+    function renderTranscript(state, strings) {
       const transcriptHtml = state.transcript.map(entry => `
         <div class="py-2 ${entry.role === 'user' ? 'text-blue-400' : 'text-slate-300'}">
           <span class="font-semibold text-xs uppercase tracking-wide opacity-60">
-            ${entry.role === 'user' ? 'User' : 'System'}:
+            ${entry.role === 'user' ? strings.transcriptUser : strings.transcriptSystem}:
           </span>
           <span class="ml-2">${entry.text}</span>
         </div>
@@ -1583,7 +1930,7 @@
         <div class="fixed bottom-4 right-4 z-50">
           <details class="bg-slate-900/95 backdrop-blur rounded-lg border border-slate-700 shadow-xl max-w-md">
             <summary class="px-4 py-2 cursor-pointer text-slate-400 hover:text-white text-sm">
-              📝 Transcript (${state.transcript.length})
+              ${strings.transcriptLabel(state.transcript.length)}
             </summary>
             <div class="px-4 pb-4 max-h-64 overflow-y-auto text-sm">
               ${transcriptHtml}
@@ -1593,7 +1940,7 @@
       `;
     }
 
-    function renderChatFeed(state) {
+    function renderChatFeed(state, strings) {
       const bubbleHtml = state.transcript.map(entry => {
         const isUser = entry.role === 'user';
         const bubbleClass = isUser
@@ -1631,19 +1978,19 @@
                 <span class="text-sm font-semibold text-white">AI</span>
               </div>
               <div>
-                <div class="text-sm font-semibold">Underwriting Assistant</div>
-                <div class="text-xs text-[var(--brand-text-secondary)]">Live demo transcript</div>
+                <div class="text-sm font-semibold">${strings.chatAssistantName}</div>
+                <div class="text-xs text-[var(--brand-text-secondary)]">${strings.chatSubtitle}</div>
               </div>
             </div>
             <div id="chatScroll" class="flex-1 overflow-y-auto space-y-3 py-4 pr-1">
-              ${bubbleHtml || '<div class="text-[var(--brand-text-secondary)] text-sm">Conversation will appear here.</div>'}
+              ${bubbleHtml || `<div class="text-[var(--brand-text-secondary)] text-sm">${strings.chatEmpty}</div>`}
               ${showUserTyping ? typingDots(true) : ''}
               ${state.pendingAssistantMessage ? typingDots(false) : ''}
               ${showSystemTyping && !state.pendingAssistantMessage && state.status !== 'listening' ? typingDots(false) : ''}
             </div>
             <div class="pt-3 border-t border-gray-200">
               <div class="bg-[var(--brand-background)] rounded-xl px-4 py-3 text-[var(--brand-text-secondary)] text-xs">
-                Voice mode enabled
+                ${strings.voiceModeEnabled}
               </div>
             </div>
           </div>
