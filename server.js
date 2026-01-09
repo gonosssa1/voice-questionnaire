@@ -268,7 +268,7 @@ app.get('/api/config', (req, res) => {
  * Converts text to speech using ElevenLabs
  */
 app.post('/api/tts', async (req, res) => {
-  const { text } = req.body;
+  const { text, language } = req.body;
 
   if (!text) {
     return res.status(400).json({ error: 'Text is required' });
@@ -279,6 +279,10 @@ app.post('/api/tts', async (req, res) => {
   }
 
   try {
+    const languageTag = typeof language === 'string' && language.trim() ? language.trim() : 'en-US';
+    const candidateCode = languageTag.split('-')[0].toLowerCase();
+    const languageCode = /^[a-z]{2}$/.test(candidateCode) ? candidateCode : 'en';
+
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${config.elevenlabs.voiceId}/stream`,
       {
@@ -290,6 +294,7 @@ app.post('/api/tts', async (req, res) => {
         body: JSON.stringify({
           text,
           model_id: config.elevenlabs.modelId,
+          language_code: languageCode,
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
