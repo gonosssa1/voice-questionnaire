@@ -156,6 +156,98 @@ RESPOND WITH ONLY THIS JSON (no markdown, no explanation):
 }
 
 // ============================================================================
+// FOLLOW-UP PROMPT BUILDER
+// ============================================================================
+
+function buildFollowupPrompt({
+  context,
+  section,
+  questionText,
+  lastAnswer,
+  priorAnswers = [],
+  topic,
+  previousFollowups = [],
+  guidance,
+  upcomingQuestions = [],
+  sectionAnswers = {},
+  recentQAPairs = [],
+  primaryContext = null,
+}) {
+  const safePrior = Array.isArray(priorAnswers) ? priorAnswers.slice(-3) : [];
+  const safeFollowups = Array.isArray(previousFollowups) ? previousFollowups.slice(-3) : [];
+  const safeUpcoming = Array.isArray(upcomingQuestions) ? upcomingQuestions.slice(0, 4) : [];
+  const safePairs = Array.isArray(recentQAPairs) ? recentQAPairs.slice(-4) : [];
+  const contextLine = context ? `CONTEXT: "${context}"` : 'CONTEXT: none';
+  const topicLine = topic ? `TOPIC: "${topic}"` : 'TOPIC: none';
+  const guidanceLine = guidance ? `GUIDANCE: "${guidance}"` : 'GUIDANCE: none';
+  const primaryLine = primaryContext && primaryContext.answer
+    ? `PRIMARY CONTEXT: "${primaryContext.id} = ${primaryContext.answer}"`
+    : 'PRIMARY CONTEXT: none';
+  const sectionLine = sectionAnswers && Object.keys(sectionAnswers).length > 0
+    ? `SECTION ANSWERS: ${JSON.stringify(sectionAnswers)}`
+    : 'SECTION ANSWERS: none';
+  const qaLine = safePairs.length > 0
+    ? `RECENT Q/A PAIRS: ${safePairs.map((pair) => `Q: "${pair.q}" A: "${pair.a}"`).join(' | ')}`
+    : 'RECENT Q/A PAIRS: none';
+
+  return `You are a follow-up question generator for a life insurance questionnaire. Your job is to ask at most ONE concise, relevant follow-up question to clarify or expand on the user's last answer.
+
+${contextLine}
+SECTION: "${section}"
+QUESTION: "${questionText}"
+LAST ANSWER: "${lastAnswer}"
+RECENT USER ANSWERS: ${safePrior.map((a) => `"${a}"`).join(', ') || 'none'}
+PREVIOUS FOLLOW-UP QUESTIONS: ${safeFollowups.map((q) => `"${q}"`).join(', ') || 'none'}
+UPCOMING SCRIPT QUESTIONS: ${safeUpcoming.map((q) => `"${q}"`).join(', ') || 'none'}
+${primaryLine}
+${sectionLine}
+${qaLine}
+${topicLine}
+${guidanceLine}
+
+RULES:
+- Ask ONLY ONE follow-up question, or respond done.
+- You are NOT required to ask a follow-up. If not clearly helpful, respond done.
+- The follow-up must be relevant to the last answer and the section topic.
+- Keep it short, conversational, and insurance-appropriate.
+- Focus on underwriting-relevant details only: diagnosis, dates, treatment, medications, severity, limitations, hospitalizations, or ongoing care.
+- Avoid lifestyle coaching, wellness advice, or curiosity questions unrelated to underwriting.
+- Do NOT ask for SSN, credit card, or highly sensitive personal data.
+- Only ask about tests, labs, or measurements if the user mentioned tests or measurements.
+- Do NOT ask anything that overlaps with or repeats the upcoming scripted questions.
+- Use SECTION ANSWERS and PRIMARY CONTEXT to keep the follow-up consistent with what the user already said.
+- If nothing useful to ask, respond with done.
+
+RESPOND WITH ONLY THIS JSON (no markdown, no explanation):
+{"ask": "YOUR_FOLLOWUP_QUESTION"}
+or
+{"done": true}`;
+}
+
+// ============================================================================
+// FOLLOW-UP OVERLAP CHECK PROMPT BUILDER
+// ============================================================================
+
+function buildFollowupOverlapPrompt(candidateQuestion, upcomingQuestions = []) {
+  const safeUpcoming = Array.isArray(upcomingQuestions) ? upcomingQuestions.slice(0, 6) : [];
+
+  return `You are a strict overlap checker for a life insurance questionnaire.
+
+CANDIDATE FOLLOW-UP: "${candidateQuestion}"
+UPCOMING SCRIPT QUESTIONS: ${safeUpcoming.map((q) => `"${q}"`).join(', ') || 'none'}
+
+RULES:
+- Respond allow=true ONLY if the candidate is NOT similar in meaning to any upcoming scripted question.
+- If the candidate overlaps or repeats an upcoming question, respond allow=false.
+- Be conservative: if unsure, respond allow=false.
+
+RESPOND WITH ONLY THIS JSON (no markdown, no explanation):
+{"allow": true}
+or
+{"allow": false}`;
+}
+
+// ============================================================================
 // API ENDPOINTS
 // ============================================================================
 
@@ -176,7 +268,7 @@ app.get('/api/config', (req, res) => {
  * Converts text to speech using ElevenLabs
  */
 app.post('/api/tts', async (req, res) => {
-  const { text } = req.body;
+  const { text, language } = req.body;
 
   if (!text) {
     return res.status(400).json({ error: 'Text is required' });
@@ -187,6 +279,10 @@ app.post('/api/tts', async (req, res) => {
   }
 
   try {
+    const languageTag = typeof language === 'string' && language.trim() ? language.trim() : 'en-US';
+    const candidateCode = languageTag.split('-')[0].toLowerCase();
+    const languageCode = /^[a-z]{2}$/.test(candidateCode) ? candidateCode : 'en';
+
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${config.elevenlabs.voiceId}/stream`,
       {
@@ -198,6 +294,7 @@ app.post('/api/tts', async (req, res) => {
         body: JSON.stringify({
           text,
           model_id: config.elevenlabs.modelId,
+          language_code: languageCode,
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
@@ -300,6 +397,92 @@ app.post('/api/why', async (req, res) => {
 });
 
 /**
+ * POST /api/followup
+ * Generates a single follow-up question or returns done
+ */
+app.post('/api/followup', async (req, res) => {
+  const { context, section, questionText, lastAnswer, priorAnswers, topic, previousFollowups, guidance, upcomingQuestions, sectionAnswers, recentQAPairs, primaryContext } = req.body;
+
+  if (!section || !questionText || lastAnswer === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (!config.anthropic.apiKey && !config.openai.apiKey) {
+    return res.json({ done: true });
+  }
+
+  const prompt = buildFollowupPrompt({
+    context,
+    section,
+    questionText,
+    lastAnswer,
+    priorAnswers,
+    topic,
+    previousFollowups,
+    guidance,
+    upcomingQuestions,
+    sectionAnswers,
+    recentQAPairs,
+    primaryContext,
+  });
+
+  try {
+    let result;
+
+    if (config.validationProvider === 'openai' && config.openai.apiKey) {
+      result = await followupWithOpenAI(prompt);
+    } else if (config.anthropic.apiKey) {
+      result = await followupWithAnthropic(prompt);
+    } else {
+      result = { done: true };
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error('Followup error:', error);
+    res.json({ done: true });
+  }
+});
+
+/**
+ * POST /api/followup-check
+ * Validates whether a follow-up question overlaps upcoming scripted questions
+ */
+app.post('/api/followup-check', async (req, res) => {
+  const { candidateQuestion, upcomingQuestions } = req.body;
+
+  if (!candidateQuestion) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (!config.anthropic.apiKey && !config.openai.apiKey) {
+    return res.json({ allow: true });
+  }
+
+  const prompt = buildFollowupOverlapPrompt(candidateQuestion, upcomingQuestions);
+
+  try {
+    let result;
+
+    if (config.validationProvider === 'openai' && config.openai.apiKey) {
+      result = await followupWithOpenAI(prompt);
+    } else if (config.anthropic.apiKey) {
+      result = await followupWithAnthropic(prompt);
+    } else {
+      result = { allow: true };
+    }
+
+    if (result && typeof result.allow === 'boolean') {
+      return res.json(result);
+    }
+    return res.json({ allow: true });
+  } catch (error) {
+    console.error('Followup check error:', error);
+    return res.json({ allow: true });
+  }
+});
+
+/**
  * Validate using Anthropic Claude
  */
 async function validateWithAnthropic(prompt) {
@@ -325,6 +508,34 @@ async function validateWithAnthropic(prompt) {
   const content = data.content[0].text.trim();
   
   return parseValidationResponse(content);
+}
+
+/**
+ * Follow-up question using Anthropic Claude
+ */
+async function followupWithAnthropic(prompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.anthropic.apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: config.anthropic.model,
+      max_tokens: 120,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Anthropic API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.content[0].text.trim();
+
+  return parseFollowupResponse(content);
 }
 
 /**
@@ -383,6 +594,33 @@ async function validateWithOpenAI(prompt) {
 }
 
 /**
+ * Follow-up question using OpenAI
+ */
+async function followupWithOpenAI(prompt) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.openai.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: config.openai.model,
+      max_tokens: 120,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices[0].message.content.trim();
+
+  return parseFollowupResponse(content);
+}
+
+/**
  * Explain using OpenAI
  */
 async function explainWithOpenAI(prompt) {
@@ -426,6 +664,31 @@ function parseValidationResponse(content) {
   } catch (error) {
     console.error('Failed to parse LLM response:', content);
     return { valid: false, normalized: null };
+  }
+}
+
+/**
+ * Parse LLM response to extract follow-up question result
+ */
+function parseFollowupResponse(content) {
+  try {
+    const jsonStr = content.replace(/```json\n?|\n?```/g, '').trim();
+    const result = JSON.parse(jsonStr);
+    if (result && typeof result.allow === 'boolean') {
+      return { allow: result.allow };
+    }
+    if (result && result.done) {
+      return { done: true };
+    }
+    if (result && typeof result.ask === 'string') {
+      const trimmed = result.ask.trim();
+      if (trimmed.length === 0) return { done: true };
+      if (trimmed.length > 200) return { done: true };
+      return { ask: trimmed };
+    }
+    return { done: true };
+  } catch (error) {
+    return { done: true };
   }
 }
 

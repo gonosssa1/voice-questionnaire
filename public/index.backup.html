@@ -67,6 +67,7 @@
     // ============================================================================
     
     const QUESTIONS = [
+      // === Customer Identification ===
       {
         id: 'cust_id_first_name',
         section: 'Welcome',
@@ -80,10 +81,19 @@
         type: 'open',
       },
       {
+        id: 'cust_id_gender',
+        section: 'Welcome',
+        question: 'Can I have your physical gender?',
+        type: 'open',
+      },
+
+      // === PRIMARY MEDICAL PROVIDER ===
+      {
         id: 'pmv.has_primary_provider',
         section: 'Primary Medical Provider',
         question: 'Do you have a primary medical provider?',
         type: 'yes_no',
+        onNo: 'pmv.other_provider_reason',
       },
       {
         id: 'pmv.last_visit_reason',
@@ -91,13 +101,6 @@
         question: 'What was the reason for your last visit or consultation with your primary medical provider?',
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
-        followups: {
-          max: 5,
-          when: 'after_valid',
-          topic: 'primary care visit details',
-          guidance: 'Focus on cause, diagnosis, or treatment. Do not ask about tests, labs, imaging, or results unless the user explicitly mentioned them.',
-          stopOnNoResponse: true,
-        },
       },
       {
         id: 'pmv.last_visit_date',
@@ -112,13 +115,6 @@
         question: 'What were the results?',
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
-        followups: {
-          max: 5,
-          when: 'after_valid',
-          topic: 'visit results and outcomes',
-          guidance: 'Ask about outcome, diagnosis, treatment changes, or doctor summary. Avoid lab values unless tests were mentioned.',
-          stopOnNoResponse: true,
-        },
       },
       {
         id: 'pmv.last_visit_treatment',
@@ -126,13 +122,6 @@
         question: 'What treatment or medications were prescribed?',
         type: 'open',
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
-        followups: {
-          max: 5,
-          when: 'after_valid',
-          topic: 'treatment and medications',
-          guidance: 'Ask about dosages, adherence, treatment changes, or side effects. If unclear, confirm the treatment or medication is for the stated condition. Avoid re-asking for medication names.',
-          stopOnNoResponse: true,
-        },
       },
       {
         id: 'pmv.last_visit_provider_name',
@@ -142,11 +131,159 @@
         requires: { id: 'pmv.has_primary_provider', answer: 'YES' },
       },
       {
+        id: 'pmv.other_provider_reason',
+        section: 'Primary Medical Provider',
+        question: 'Other than your primary medical provider, what was the reason for your last visit or consultation with any medical provider?',
+        type: 'open',
+        requires: { id: 'pmv.has_primary_provider', answer: 'NO' },
+      },
+      
+      // === NEUROLOGICAL ===
+      {
+        id: 'neuro.gateway',
+        section: 'Neurological',
+        question: 'Have you ever been diagnosed with any disorder or disease of the brain, spinal cord or nervous system?',
+        type: 'yes_no',
+        onNo: 'psych.gateway',
+      },
+      {
+        id: 'neuro.dx_list',
+        section: 'Neurological',
+        question: 'What specific neurological condition(s) were diagnosed?',
+        type: 'open',
+        requires: { id: 'neuro.gateway', answer: 'YES' },
+      },
+      {
+        id: 'neuro.dx_dates',
+        section: 'Neurological',
+        question: 'Date of first diagnosis and date of most recent symptoms?',
+        type: 'open',
+        requires: { id: 'neuro.gateway', answer: 'YES' },
+      },
+      {
+        id: 'neuro.hosp_impairment',
+        section: 'Neurological',
+        question: 'Any hospitalizations, ER visits, seizures/episodes, or functional limitations in the past 5 years?',
+        type: 'open',
+        requires: { id: 'neuro.gateway', answer: 'YES' },
+      },
+      
+      // === PSYCHIATRIC ===
+      {
+        id: 'psych.gateway',
+        section: 'Psychiatric',
+        question: 'Have you ever been diagnosed with any psychiatric, nervous, emotional, or mental disorder or disease?',
+        type: 'yes_no',
+        onNo: 'eent.gateway',
+      },
+      {
+        id: 'psych.dx_list',
+        section: 'Psychiatric',
+        question: 'What diagnoses apply? (ADHD/ADD, anxiety, depression, bipolar, PTSD, etc.)',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.dx_dates',
+        section: 'Psychiatric',
+        question: 'When was this condition diagnosed?',
+        type: 'date',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.current_tx',
+        section: 'Psychiatric',
+        question: 'Are you currently under treatment or taking medication for the condition?',
+        type: 'yes_no',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.meds_count',
+        section: 'Psychiatric',
+        question: 'How many medications do you take, if any?',
+        type: 'number',
+        requires: { id: 'psych.current_tx', answer: 'YES' },
+      },
+      {
+        id: 'psych.meds_names',
+        section: 'Psychiatric',
+        question: 'What is/are the name(s) of the medication(s)?',
+        type: 'open',
+        requires: { id: 'psych.current_tx', answer: 'YES' },
+      },
+      {
+        id: 'psych.disability_hosp',
+        section: 'Psychiatric',
+        question: 'In the past 3 years: any disability payments, missed >1 week of work, ER/hospitalization, or self-harm/suicidal ideation?',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.provider_name',
+        section: 'Psychiatric',
+        question: 'Do you know the name of the medical provider you saw for this condition?',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.med_changes_12m',
+        section: 'Psychiatric',
+        question: 'Any medication changes, dose increases, or new prescriptions in the past 12 months?',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.comorbid',
+        section: 'Psychiatric',
+        question: 'Any comorbid mental health diagnoses or active symptoms (panic attacks, major depression episodes, mania, etc.)?',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      {
+        id: 'psych.substance_misuse',
+        section: 'Psychiatric',
+        question: 'Have you ever been diagnosed with any history of substance abuse, dependence, or misuse of prescribed medications?',
+        type: 'open',
+        requires: { id: 'psych.gateway', answer: 'YES' },
+      },
+      
+      // === EENT ===
+      {
+        id: 'eent.gateway',
+        section: 'EENT',
+        question: 'Any disorder or disease of the eyes, ears, nose, or throat?',
+        type: 'yes_no',
+        onNo: 'cardio.gateway',
+      },
+      {
+        id: 'eent.dx',
+        section: 'EENT',
+        question: 'What condition (hearing loss, glaucoma, chronic sinusitis)?',
+        type: 'open',
+        requires: { id: 'eent.gateway', answer: 'YES' },
+      },
+      {
+        id: 'eent.treatment',
+        section: 'EENT',
+        question: 'Is the condition corrected/treated (surgery, hearing aids, lenses, medication)?',
+        type: 'open',
+        requires: { id: 'eent.gateway', answer: 'YES' },
+      },
+      {
+        id: 'eent.impairment',
+        section: 'EENT',
+        question: 'Does it impair daily activities, driving, or job duties?',
+        type: 'open',
+        requires: { id: 'eent.gateway', answer: 'YES' },
+      },
+      
+      // === CARDIOVASCULAR ===
+      {
         id: 'cardio.gateway',
         section: 'Cardiovascular',
-        question: 'Do you have any disorder or disease of the heart, blood vessels, or circulatory system (including high blood pressure/high cholesterol)?',
+        question: 'Have you ever been diagnosed with any disorder or disease of the heart, blood vessels, or circulatory system (including high blood pressure/high cholesterol)?',
         type: 'yes_no',
-        onNo: 'END',
+        onNo: 'resp.gateway',
       },
       {
         id: 'cardio.dx',
@@ -167,13 +304,7 @@
         section: 'Cardiovascular',
         question: 'Do you know your most recent blood pressure reading?',
         type: 'yes_no',
-        requires: {
-          all: [{ id: 'cardio.gateway', answer: 'YES' }],
-          any: [
-            { id: 'cardio.dx', contains: 'hypertension' },
-            { id: 'cardio.dx', contains: 'high blood pressure' },
-          ],
-        },
+        requires: { id: 'cardio.gateway', answer: 'YES' },
       },
       {
         id: 'cardio.bp_sys',
@@ -190,31 +321,11 @@
         requires: { id: 'cardio.bp_known', answer: 'YES' },
       },
       {
-        id: 'cardio.control_duration',
-        section: 'Cardiovascular',
-        question: 'How long have readings been controlled at roughly the current level?',
-        type: 'open',
-        requires: {
-          all: [{ id: 'cardio.bp_known', answer: 'YES' }],
-          any: [
-            { id: 'cardio.dx', contains: 'hypertension' },
-            { id: 'cardio.dx', contains: 'high blood pressure' },
-          ],
-        },
-      },
-      {
         id: 'cardio.on_meds',
         section: 'Cardiovascular',
         question: 'Are you taking medication for this condition?',
         type: 'yes_no',
         requires: { id: 'cardio.gateway', answer: 'YES' },
-        followups: {
-          max: 5,
-          when: 'after_valid',
-          topic: 'cardiovascular medications',
-          guidance: 'Ask about medication names, dosage, or adherence. If unclear, confirm the medication is for the stated condition. Avoid labs unless tests were mentioned.',
-          stopOnNoResponse: true,
-        },
       },
       {
         id: 'cardio.provider_name',
@@ -222,196 +333,67 @@
         question: 'Do you know the name of the medical provider you saw for this condition?',
         type: 'open',
         requires: { id: 'cardio.gateway', answer: 'YES' },
-      }
+      },
+      {
+        id: 'cardio.control_duration',
+        section: 'Cardiovascular',
+        question: 'How long have readings been controlled at roughly the current level?',
+        type: 'open',
+        requires: { id: 'cardio.gateway', answer: 'YES' },
+      },
+      {
+        id: 'cardio.comorbid',
+        section: 'Cardiovascular',
+        question: 'Any related conditions (diabetes, kidney disease, stroke/TIA, heart disease)?',
+        type: 'open',
+        requires: { id: 'cardio.gateway', answer: 'YES' },
+      },
+      {
+        id: 'cardio.testing_hosp',
+        section: 'Cardiovascular',
+        question: 'Any chest pain, shortness of breath on exertion, abnormal EKG/echo/stress test, ER visit, or hospitalization?',
+        type: 'open',
+        requires: { id: 'cardio.gateway', answer: 'YES' },
+      },
+      
+      // === RESPIRATORY ===
+      {
+        id: 'resp.gateway',
+        section: 'Respiratory',
+        question: 'Have you ever been diagnosed with any disorder or disease of the respiratory system (asthma, COPD, sleep apnea, etc.)?',
+        type: 'yes_no',
+        onNo: 'END',
+      },
+      {
+        id: 'resp.dx',
+        section: 'Respiratory',
+        question: 'What condition (asthma, sleep apnea, COPD, chronic bronchitis, etc.)?',
+        type: 'open',
+        requires: { id: 'resp.gateway', answer: 'YES' },
+      },
+      {
+        id: 'resp.severity',
+        section: 'Respiratory',
+        question: 'How would you rate severity (mild/moderate/severe) and current control?',
+        type: 'open',
+        requires: { id: 'resp.gateway', answer: 'YES' },
+      },
+      {
+        id: 'resp.exacerbations',
+        section: 'Respiratory',
+        question: 'Any hospitalizations/ER visits, steroid bursts, CPAP/oxygen therapy use in past 5 years?',
+        type: 'open',
+        requires: { id: 'resp.gateway', answer: 'YES' },
+      },
     ];
-    const DEFAULT_LANGUAGE = 'en';
-    const LANGUAGE_OPTIONS = {
-      en: { label: 'English', asrLang: 'en-US', ttsLang: 'en-US', htmlLang: 'en' },
-      es: { label: 'Español', asrLang: 'es-ES', ttsLang: 'es-ES', htmlLang: 'es' },
-    };
 
-    const UI_STRINGS = {
-      en: {
-        title: 'AI-Validated Insurance Questionnaire',
-        headerSubtitle: 'AI Voice Application Prototype',
-        headerTitle: 'Medical History Questionnaire',
-        headerTagline: 'Insurance Application',
-        progressLabel: 'Progress',
-        questionCount: (current, total) => `Question ${current} of ${total}`,
-        readyTitle: 'Ready to Begin',
-        readyDescription: 'This questionnaire will ask about your medical history using voice interaction. Please ensure you are in a quiet environment and speak clearly.',
-        startButton: 'Start Application',
-        unsupportedAsr: 'Voice recognition is not supported in this browser. Please use Chrome or Edge.',
-        speakingLabel: 'Speaking',
-        speakingSub: 'Please listen to the question',
-        listeningLabel: 'Listening',
-        listeningSub: 'Please speak your answer clearly',
-        validatingLabel: 'Processing',
-        validatingSub: 'Analyzing your response with AI',
-        yesNoHint: 'Please answer yes or no',
-        optionsLabel: 'Options',
-        retryLabel: (current, total) => `Attempt ${current} of ${total}`,
-        endCallButton: 'End Call',
-        completionTitle: 'Application Complete',
-        completionDescription: 'Thank you for completing the questionnaire. Your responses have been recorded.',
-        summaryTitle: 'Response Summary',
-        summaryEmpty: 'No responses recorded',
-        followupLabel: (index) => `Follow-up ${index}:`,
-        restartButton: 'Start New Application',
-        handoffTitle: 'Agent Handoff Requested',
-        handoffDescription: 'We can connect you with an agent to finish this question.',
-        handoffRestartButton: 'Start Over',
-        chatAssistantName: 'Underwriting Assistant',
-        chatSubtitle: 'Live demo transcript',
-        chatEmpty: 'Conversation will appear here.',
-        voiceModeEnabled: 'Voice mode enabled',
-        transcriptLabel: (count) => `Transcript (${count})`,
-        transcriptUser: 'User',
-        transcriptSystem: 'System',
-        languageLabel: 'Language',
-        introMessage: 'Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your lifestyle and health. This information will help us with your life insurance application.',
-        completionMessage: 'Thank you for choosing Protective Life. Your responses have been recorded.',
-        whyFallback: 'This helps us understand your medical history for your application.',
-        medicalConditionsAnnouncement: 'Now we will go through some specific medical conditions. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.',
-        noResponseRetry: "I didn't hear anything. Let me repeat the question.",
-        noResponseMoveOn: "I'm having trouble hearing you. Let's move on.",
-        repeatAcknowledgement: "Sure, I'll repeat the question.",
-        thankYou: 'Thank you.',
-        whyPrompt: 'Let me know if you want me to repeat it, or go ahead and answer.',
-        handoffPrompt: 'I want to make sure we get this right. I can connect you to an agent, or we can move forward here. What do you prefer?',
-        moveOnNext: "Let's move on to the next question.",
-        retryEscalation: " Let's try once more.",
-        bridgeOptions: [
-          "That's why we ask.",
-          'I appreciate you asking.',
-          'Thanks for checking on that.',
-          'That context helps.',
-        ],
-        genericExplanation: {
-          yes_no: 'Please answer with a clear yes or no.',
-          date: 'Please provide a date.',
-          number: 'Please provide a number.',
-          choice: 'Please choose one of the options.',
-          open: 'Please provide a valid response.',
-        },
-      },
-      es: {
-        title: 'Cuestionario de seguro validado por IA',
-        headerSubtitle: 'Prototipo de aplicación de voz con inteligencia artificial',
-        headerTitle: 'Cuestionario de historial médico',
-        headerTagline: 'Solicitud de seguro',
-        progressLabel: 'Progreso',
-        questionCount: (current, total) => `Pregunta ${current} de ${total}`,
-        readyTitle: 'Listo para comenzar',
-        readyDescription: 'Este cuestionario le hará preguntas sobre su historial médico mediante interacción por voz. Por favor, asegúrese de estar en un entorno tranquilo y hable con claridad.',
-        startButton: 'Iniciar aplicación',
-        unsupportedAsr: 'El reconocimiento de voz no es compatible con este navegador. Use Chrome o Edge.',
-        speakingLabel: 'Hablando',
-        speakingSub: 'Por favor, escuche la pregunta.',
-        listeningLabel: 'Escuchando',
-        listeningSub: 'Por favor, diga su respuesta con claridad.',
-        validatingLabel: 'Procesando',
-        validatingSub: 'Analizando su respuesta con IA.',
-        yesNoHint: 'Por favor, responda sí o no.',
-        optionsLabel: 'Opciones',
-        retryLabel: (current, total) => `Intento ${current} de ${total}`,
-        endCallButton: 'Finalizar llamada',
-        completionTitle: 'Solicitud completada',
-        completionDescription: 'Gracias por completar el cuestionario. Sus respuestas han sido registradas.',
-        summaryTitle: 'Resumen de respuestas',
-        summaryEmpty: 'No hay respuestas registradas',
-        followupLabel: (index) => `Seguimiento ${index}:`,
-        restartButton: 'Iniciar nueva solicitud',
-        handoffTitle: 'Transferencia a agente solicitada',
-        handoffDescription: 'Podemos conectarlo con un agente para terminar esta pregunta.',
-        handoffRestartButton: 'Comenzar de nuevo',
-        chatAssistantName: 'Asistente de suscripción',
-        chatSubtitle: 'Transcripción de la demostración en vivo',
-        chatEmpty: 'La conversación aparecerá aquí.',
-        voiceModeEnabled: 'Modo de voz habilitado',
-        transcriptLabel: (count) => `Transcripción (${count})`,
-        transcriptUser: 'Usuario',
-        transcriptSystem: 'Sistema',
-        languageLabel: 'Idioma',
-        introMessage: 'Hola y gracias por elegir Protective Life. Durante esta llamada telefónica le haré varias preguntas sobre su estilo de vida y salud. Esta información nos ayudará con su solicitud de seguro de vida.',
-        completionMessage: 'Gracias por elegir Protective Life. Sus respuestas han sido registradas.',
-        whyFallback: 'Esto nos ayuda a entender su historial médico para su solicitud.',
-        medicalConditionsAnnouncement: 'Ahora repasaremos algunas condiciones médicas específicas. Por favor, hágame saber si ha tenido alguna de las condiciones para que podamos obtener información adicional cuando sea necesario.',
-        noResponseRetry: 'No escuché nada. Permítame repetir la pregunta.',
-        noResponseMoveOn: 'Estoy teniendo problemas para escucharle. Sigamos adelante.',
-        repeatAcknowledgement: 'Claro, repetiré la pregunta.',
-        thankYou: 'Gracias.',
-        whyPrompt: 'Dígame si quiere que la repita o puede responder.',
-        handoffPrompt: 'Quiero asegurarme de que lo hagamos bien. Puedo conectarlo con un agente, o podemos continuar aquí. ¿Qué prefiere?',
-        moveOnNext: 'Pasemos a la siguiente pregunta.',
-        retryEscalation: ' Intentemos una vez más.',
-        bridgeOptions: [
-          'Por eso lo preguntamos.',
-          'Gracias por preguntar.',
-          'Gracias por comprobarlo.',
-          'Ese contexto ayuda.',
-        ],
-        genericExplanation: {
-          yes_no: 'Por favor, responda con un sí o un no.',
-          date: 'Por favor, proporcione una fecha.',
-          number: 'Por favor, proporcione un número.',
-          choice: 'Por favor, elija una de las opciones.',
-          open: 'Por favor, proporcione una respuesta válida.',
-        },
-      },
-    };
+    const INTRO_MESSAGE =
+      "Hello and Thank you for choosing Protective Life. During this phone call I will ask several questions regarding your health, medications, some financials, even past or future travel. What this information will do is help us understand your health and financial situation as it relates to life insurance.";
 
-    const SECTION_TRANSLATIONS = {
-      es: {
-        'Welcome': 'Bienvenida',
-        'Primary Medical Provider': 'Proveedor médico primario',
-        'Cardiovascular': 'Cardiovascular',
-      },
-    };
-
-    const QUESTION_TRANSLATIONS = {
-      es: {
-        'cust_id_first_name': '¿Puedo tener su primer nombre?',
-        'cust_id_last_name': '¿Puedo tener su apellido?',
-        'pmv.has_primary_provider': '¿Tiene un proveedor médico primario?',
-        'pmv.last_visit_reason': '¿Cuál fue el motivo de su última visita o consulta con su proveedor médico primario?',
-        'pmv.last_visit_date': '¿Cuándo fue esta visita?',
-        'pmv.last_visit_results': '¿Cuáles fueron los resultados?',
-        'pmv.last_visit_treatment': '¿Qué tratamiento o medicamentos le recetaron?',
-        'pmv.last_visit_provider_name': '¿Sabe el nombre del proveedor médico que vio para este chequeo?',
-        'cardio.gateway': '¿Tiene algún trastorno o enfermedad del corazón, vasos sanguíneos o sistema circulatorio (incluyendo presión arterial alta/colesterol alto)?',
-        'cardio.dx': '¿Qué diagnósticos aplican? (hipertensión, hiperlipidemia, enfermedad arterial coronaria, arritmia)',
-        'cardio.dx_date': '¿Cuándo se diagnosticó la condición?',
-        'cardio.bp_known': '¿Sabe su lectura de presión arterial más reciente?',
-        'cardio.bp_sys': '¿Presión arterial sistólica más reciente (número superior)?',
-        'cardio.bp_dia': '¿Presión arterial diastólica más reciente (número inferior)?',
-        'cardio.control_duration': '¿Cuánto tiempo han estado controladas las lecturas aproximadamente al nivel actual?',
-        'cardio.on_meds': '¿Está tomando medicamento para esta condición?',
-        'cardio.provider_name': '¿Sabe el nombre del proveedor médico que vio para esta condición?',
-      },
-    };
-
-    function normalizeLanguage(lang) {
-      return LANGUAGE_OPTIONS[lang] ? lang : DEFAULT_LANGUAGE;
-    }
-
-    function getLanguageConfig(lang) {
-      return LANGUAGE_OPTIONS[normalizeLanguage(lang)];
-    }
-
-    function getStrings(lang) {
-      return UI_STRINGS[normalizeLanguage(lang)];
-    }
-
-    function getSectionLabel(section, lang) {
-      const translations = SECTION_TRANSLATIONS[normalizeLanguage(lang)] || {};
-      return translations[section] || section;
-    }
-
-    function getQuestionText(question, lang) {
-      const translations = QUESTION_TRANSLATIONS[normalizeLanguage(lang)] || {};
-      return translations[question.id] || question.question;
-    }
+    const COMPLETION_MESSAGE = 
+      "Thank you choosing Protective Life. " +
+      "Your responses have been recorded. " +
+      "A representative will review your information and contact you within 24 to 48 hours.";
 
     const MAX_RETRIES = 3;
     const MAX_EXPLAINS = 2;
@@ -421,15 +403,10 @@
     // ============================================================================
     
     class TTSService {
-      constructor(lang = 'en-US') {
+      constructor() {
         this.audioContext = null;
         this.currentSource = null;
         this.isSpeaking = false;
-        this.lang = lang;
-      }
-
-      setLanguage(lang) {
-        this.lang = lang;
       }
 
       async speak(text) {
@@ -451,7 +428,7 @@
           const response = await fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, language: this.lang }),
+            body: JSON.stringify({ text }),
           });
 
           if (!response.ok) {
@@ -488,7 +465,6 @@
         return new Promise((resolve) => {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = this.lang;
           utterance.rate = 0.9;
           utterance.pitch = 1;
           utterance.onend = resolve;
@@ -512,23 +488,15 @@
     // ============================================================================
     
     class ASRService {
-      constructor(lang = 'en-US') {
+      constructor() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = SpeechRecognition ? new SpeechRecognition() : null;
-        this.lang = lang;
         
         if (this.recognition) {
           this.recognition.continuous = false;
           this.recognition.interimResults = false;
-          this.recognition.lang = this.lang;
+          this.recognition.lang = 'en-US';
           this.recognition.maxAlternatives = 1;
-        }
-      }
-
-      setLanguage(lang) {
-        this.lang = lang;
-        if (this.recognition) {
-          this.recognition.lang = lang;
         }
       }
 
@@ -583,7 +551,6 @@
             }
           }, timeoutMs);
 
-          this.recognition.lang = this.lang;
           this.recognition.start();
         });
       }
@@ -621,7 +588,7 @@
     }
 
     class WhyService {
-      async explain(question, section, explainLevel = 1, previousExplanation = null, fallbackExplanation = null) {
+      async explain(question, section, explainLevel = 1, previousExplanation = null) {
         try {
           const response = await fetch('/api/why', {
             method: 'POST',
@@ -636,47 +603,7 @@
           return await response.json();
         } catch (error) {
           console.error('Why explanation error:', error);
-          return { explanation: fallbackExplanation || 'This helps us understand your medical history for your application.' };
-        }
-      }
-    }
-
-    class FollowupService {
-      async nextQuestion(payload) {
-        try {
-          const response = await fetch('/api/followup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-
-          if (!response.ok) {
-            throw new Error('Followup API error');
-          }
-
-          return await response.json();
-        } catch (error) {
-          console.error('Followup error:', error);
-          return { done: true };
-        }
-      }
-
-      async checkOverlap(payload) {
-        try {
-          const response = await fetch('/api/followup-check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-
-          if (!response.ok) {
-            throw new Error('Followup check API error');
-          }
-
-          return await response.json();
-        } catch (error) {
-          console.error('Followup check error:', error);
-          return { allow: true };
+          return { explanation: 'This helps us understand your medical history for your application.' };
         }
       }
     }
@@ -686,6 +613,12 @@
     
     class FlowController {
       constructor() {
+        this.tts = new TTSService();
+        this.asr = new ASRService();
+        this.validator = new ValidationService();
+        this.why = new WhyService();
+        this.sessionId = 0;
+        
         this.state = {
           status: 'idle',
           currentQuestionIndex: -1,
@@ -694,24 +627,11 @@
           retryCount: 0,
           explainCounts: {},
           lastWhyExplanation: null,
-          announcementsPlayed: {},
-          followups: {},
           pendingAssistantMessage: null,
           error: null,
-          language: DEFAULT_LANGUAGE,
         };
-
-        const languageConfig = getLanguageConfig(this.state.language);
-        this.tts = new TTSService(languageConfig.ttsLang);
-        this.asr = new ASRService(languageConfig.asrLang);
-        this.validator = new ValidationService();
-        this.why = new WhyService();
-        this.followup = new FollowupService();
-        this.sessionId = 0;
         
         this.onStateChange = null;
-
-        this.applyLanguage(this.state.language);
       }
 
       setState(updates) {
@@ -719,151 +639,20 @@
         if (this.onStateChange) this.onStateChange(this.state);
       }
 
-      applyLanguage(lang) {
-        const normalized = normalizeLanguage(lang);
-        const config = getLanguageConfig(normalized);
-        this.tts.setLanguage(config.ttsLang);
-        this.asr.setLanguage(config.asrLang);
-        document.documentElement.lang = config.htmlLang;
-        document.title = getStrings(normalized).title;
-      }
-
-      setLanguage(lang) {
-        const normalized = normalizeLanguage(lang);
-        if (this.state.language === normalized) return;
-        this.applyLanguage(normalized);
-        this.setState({ language: normalized });
-      }
-
-      recordUserAnswer(text) {
-        this.state.transcript.push({ role: 'user', text });
-        this.setState({ status: 'validating' });
-      }
-
       findNextQuestionIndex(fromIndex, answers) {
         for (let i = fromIndex; i < QUESTIONS.length; i++) {
           const q = QUESTIONS[i];
           
           if (q.requires) {
-            const requirementGroups = q.requires.all || q.requires.any
-              ? {
-                  all: Array.isArray(q.requires.all) ? q.requires.all : [],
-                  any: Array.isArray(q.requires.any) ? q.requires.any : [],
-                }
-              : {
-                  all: Array.isArray(q.requires) ? q.requires : [q.requires],
-                  any: [],
-                };
-
-            const matchesRequirement = (req) => {
-              const dependentAnswer = answers[req.id];
-              if (req.answer && dependentAnswer !== req.answer) return false;
-              if (req.contains) {
-                const normalized = (dependentAnswer || '').toString().toLowerCase();
-                if (!normalized.includes(req.contains.toLowerCase())) return false;
-              }
-              return true;
-            };
-
-            const meetsAll = requirementGroups.all.every(matchesRequirement);
-            const meetsAny = requirementGroups.any.length === 0
-              ? true
-              : requirementGroups.any.some(matchesRequirement);
-
-            if (!meetsAll || !meetsAny) continue;
+            const dependentAnswer = answers[q.requires.id];
+            if (dependentAnswer !== q.requires.answer) {
+              continue;
+            }
           }
           
           return i;
         }
         return -1;
-      }
-
-      getRecentUserAnswers(limit = 3) {
-        const recent = [];
-        for (let i = this.state.transcript.length - 1; i >= 0 && recent.length < limit; i -= 1) {
-          if (this.state.transcript[i].role === 'user') {
-            recent.push(this.state.transcript[i].text);
-          }
-        }
-        return recent.reverse();
-      }
-
-      getPreviousFollowupQuestions(questionId) {
-        const followups = this.state.followups[questionId];
-        if (!followups || !Array.isArray(followups.items)) return [];
-        return followups.items.map((item) => item.q);
-      }
-
-      getSectionAnswers(section) {
-        if (!section) return {};
-        const result = {};
-        for (const q of QUESTIONS) {
-          if (q.section === section && this.state.answers[q.id] !== undefined) {
-            result[q.id] = this.state.answers[q.id];
-          }
-        }
-        return result;
-      }
-
-      getRecentQuestionAnswerPairs(limit = 4) {
-        const pairs = [];
-        for (let i = this.state.transcript.length - 1; i >= 0 && pairs.length < limit; i -= 1) {
-          if (this.state.transcript[i].role === 'assistant') {
-            const questionText = this.state.transcript[i].text;
-            let answerText = null;
-            for (let j = i + 1; j < this.state.transcript.length; j += 1) {
-              if (this.state.transcript[j].role === 'user') {
-                answerText = this.state.transcript[j].text;
-                break;
-              }
-            }
-            if (answerText) {
-              pairs.unshift({ q: questionText, a: answerText });
-            }
-          }
-        }
-        return pairs;
-      }
-
-      getUpcomingQuestionTexts(fromIndex, limit = 4, language = this.state.language) {
-        const upcoming = [];
-        for (let i = fromIndex + 1; i < QUESTIONS.length && upcoming.length < limit; i += 1) {
-          const nextQuestion = QUESTIONS[i];
-          if (nextQuestion && nextQuestion.question) {
-            upcoming.push(getQuestionText(nextQuestion, language));
-          }
-        }
-        return upcoming;
-      }
-
-      isSimilarToUpcomingQuestion(followupText, upcomingQuestions) {
-        if (!followupText || !Array.isArray(upcomingQuestions)) return false;
-        const normalize = (text) =>
-          text
-            .toLowerCase()
-            .replace(/[^a-z0-9\s]/g, ' ')
-            .split(/\s+/)
-            .filter((word) => word.length > 2);
-        const followupTokens = new Set(normalize(followupText));
-        if (followupTokens.size === 0) return false;
-
-        for (const upcoming of upcomingQuestions) {
-          if (!upcoming) continue;
-          const upcomingTokens = new Set(normalize(upcoming));
-          if (upcomingTokens.size === 0) continue;
-
-          let overlap = 0;
-          for (const token of followupTokens) {
-            if (upcomingTokens.has(token)) overlap += 1;
-          }
-
-          const overlapRatio = overlap / Math.max(1, followupTokens.size);
-          if (overlapRatio >= 0.6) return true;
-          if (upcoming.toLowerCase().includes(followupText.toLowerCase())) return true;
-          if (followupText.toLowerCase().includes(upcoming.toLowerCase())) return true;
-        }
-
-        return false;
       }
 
       handleSkipTo(skipToId, currentIndex, answers) {
@@ -879,10 +668,9 @@
       async askQuestion(questionIndex, options = {}) {
         const { preserveRetryCount = false, retryCountOverride = null } = options;
         const sessionId = this.sessionId;
-        const strings = getStrings(this.state.language);
         if (questionIndex < 0 || questionIndex >= QUESTIONS.length) {
           this.setState({ status: 'speaking', currentQuestionIndex: -1 });
-          await this.speakAssistant(strings.completionMessage, sessionId);
+          await this.speakAssistant(COMPLETION_MESSAGE, sessionId);
           if (this.sessionId !== sessionId) return;
           this.setState({ status: 'complete' });
           return;
@@ -891,8 +679,6 @@
         const shouldResetWhy = questionIndex !== this.state.currentQuestionIndex;
         const shouldResetRetry = questionIndex !== this.state.currentQuestionIndex;
         const question = QUESTIONS[questionIndex];
-        const language = this.state.language;
-        const questionText = getQuestionText(question, language);
         this.setState({ 
           status: 'speaking', 
           currentQuestionIndex: questionIndex,
@@ -903,31 +689,23 @@
         });
 
         // Announce the Lifestyle and Medical Related questions
-        // const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
-        // if (questionIndex === 2) {
-        //   this.setState({ showQuestionText: false });
-        //   this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
-        //   await this.tts.speak(Lifestyle_and_Medical_Message);
-        // }
-
-        // Announce the Medical Conditions related questions
-        const Medical_Conditions_Message = strings.medicalConditionsAnnouncement;
-        if (questionIndex === 8 && !this.state.announcementsPlayed.medicalConditions) {
-          this.setState({ showQuestionText: false });
-          await this.speakAssistant(Medical_Conditions_Message, sessionId);
-          this.setState({
-            announcementsPlayed: {
-              ...this.state.announcementsPlayed,
-              medicalConditions: true,
-            },
-          });
+        const Lifestyle_and_Medical_Message = "Next we will be going through some Lifestyle and medical related questions. Please keep in mind that the answers are assumed to be to the best of your knowledge. In order to expedite the overall application process we do like to obtain as much information as possible up front to eliminate any delays.";
+        if (questionIndex === 4) {
+          this.state.transcript.push({ role: 'assistant', text: Lifestyle_and_Medical_Message });
+          await this.tts.speak(Lifestyle_and_Medical_Message);
         }
 
-        this.setState({ showQuestionText: true });
-        await this.speakAssistant(questionText, sessionId);
+        // Announce the Medical Conditions related questions
+        const Medical_Conditions_Message = "Now we will go through some specific medical conditions. I will read a few of them for you at a time. Please let me know if you have had any of the conditions so that we can obtain additional information where necessary.";
+        if (questionIndex === 10) {
+          this.state.transcript.push({ role: 'assistant', text: Medical_Conditions_Message });
+          await this.tts.speak(Medical_Conditions_Message);
+        }
+
+        await this.speakAssistant(question.question, sessionId);
         if (this.sessionId !== sessionId) return;
 
-        this.setState({ status: 'listening', pendingAssistantMessage: null });
+        this.setState({ status: 'listening' });
         
         try {
           const spokenAnswer = await this.asr.listen(15000);
@@ -937,11 +715,11 @@
             if (this.state.retryCount < MAX_RETRIES) {
               const nextRetry = this.state.retryCount + 1;
               this.setState({ retryCount: nextRetry });
-              await this.speakAssistant(strings.noResponseRetry, sessionId);
+              await this.speakAssistant("I didn't hear anything. Let me repeat the question.", sessionId);
               if (this.sessionId !== sessionId) return;
               return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: nextRetry });
             } else {
-              await this.speakAssistant(strings.noResponseMoveOn, sessionId);
+              await this.speakAssistant("I'm having trouble hearing you. Let's move on.", sessionId);
               if (this.sessionId !== sessionId) return;
               this.state.answers[question.id] = 'NO_RESPONSE';
               return this.advanceToNextQuestion(questionIndex, 'NO_RESPONSE');
@@ -954,10 +732,10 @@
           const transcriptAnswer = genderTranscript
             ? this.ensureTranscriptPeriod(genderTranscript)
             : spokenAnswer;
-          this.recordUserAnswer(transcriptAnswer);
+          this.state.transcript.push({ role: 'user', text: transcriptAnswer });
           
           if (this.isRepeatRequest(spokenAnswer)) {
-            const acknowledgement = strings.repeatAcknowledgement;
+            const acknowledgement = "Sure, I'll repeat the question.";
             this.setState({ status: 'speaking' });
             await this.speakAssistant(acknowledgement, sessionId);
             if (this.sessionId !== sessionId) return;
@@ -974,7 +752,7 @@
               this.state.answers[question.id] = genderValue;
               this.setState({ status: 'speaking' });
               this.replaceLastUserTranscript(this.ensureTranscriptPeriod(genderValue));
-              await this.speakAssistant(strings.thankYou, sessionId);
+              await this.speakAssistant("Thank you.", sessionId);
               if (this.sessionId !== sessionId) return;
               return this.advanceToNextQuestion(questionIndex, genderValue);
             }
@@ -1031,27 +809,6 @@
           'say that',
           'say it',
         ];
-        if (this.state.language === 'es') {
-          patterns.push(
-            'repite',
-            'repita',
-            'repetir',
-            'puede repetir',
-            'podria repetir',
-            'podrías repetir',
-            'otra vez',
-            'de nuevo',
-            'que dijiste',
-            'qué dijiste',
-            'que fue eso',
-            'qué fue eso',
-            'perdon',
-            'perdón',
-            'disculpa',
-            'disculpe',
-            'repita por favor'
-          );
-        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -1059,26 +816,16 @@
         if (!text) return null;
         const trimmed = text.trim();
         const lowered = trimmed.toLowerCase().replace(/[^a-z]/g, '');
-        const malePatterns = ['male', 'mail', 'man', 'm'];
-        const femalePatterns = ['female', 'femail', 'woman', 'f'];
-        const nonBinaryPatterns = ['nonbinary', 'nb'];
-        const otherPatterns = ['other', 'prefernot', 'na'];
-        if (this.state.language === 'es') {
-          malePatterns.push('hombre', 'masculino', 'varon');
-          femalePatterns.push('mujer', 'femenino');
-          nonBinaryPatterns.push('nobinario');
-          otherPatterns.push('otro');
-        }
-        if (malePatterns.includes(lowered)) {
+        if (['male', 'mail', 'man', 'm'].includes(lowered)) {
           return 'Male';
         }
-        if (femalePatterns.includes(lowered)) {
+        if (['female', 'femail', 'woman', 'f'].includes(lowered)) {
           return 'Female';
         }
-        if (nonBinaryPatterns.includes(lowered)) {
+        if (['nonbinary', 'nb'].includes(lowered)) {
           return 'Non-binary';
         }
-        if (otherPatterns.includes(lowered)) {
+        if (['other', 'prefernot', 'na'].includes(lowered)) {
           return 'Other';
         }
         return null;
@@ -1103,19 +850,6 @@
           /^i understand\b[\s,.-]*/i,
           /^that makes sense\b[\s,.-]*/i,
         ];
-        if (this.state.language === 'es') {
-          patterns.push(
-            /^sí\b[\s,.-]*/i,
-            /^si\b[\s,.-]*/i,
-            /^claro\b[\s,.-]*/i,
-            /^vale\b[\s,.-]*/i,
-            /^de acuerdo\b[\s,.-]*/i,
-            /^gracias\b[\s,.-]*/i,
-            /^bueno\b[\s,.-]*/i,
-            /^entiendo\b[\s,.-]*/i,
-            /^tiene sentido\b[\s,.-]*/i
-          );
-        }
 
         for (const pattern of patterns) {
           if (pattern.test(trimmed)) {
@@ -1156,33 +890,6 @@
           'why',
           'explain',
         ];
-        if (this.state.language === 'es') {
-          patterns.push(
-            'por que',
-            'por qué',
-            'por que pregunta',
-            'por qué pregunta',
-            'por que me pregunta',
-            'por qué me pregunta',
-            'por que necesita',
-            'por qué necesita',
-            'por que necesita saber',
-            'por qué necesita saber',
-            'para que es esto',
-            'para qué es esto',
-            'para que es esta pregunta',
-            'para qué es esta pregunta',
-            'puede explicar',
-            'podria explicar',
-            'podría explicar',
-            'explique',
-            'explica',
-            'explicame',
-            'explícame',
-            'ayudeme a entender',
-            'ayúdeme a entender'
-          );
-        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -1197,18 +904,6 @@
           'human',
           'connect me',
         ];
-        if (this.state.language === 'es') {
-          patterns.push(
-            'agente',
-            'representante',
-            'hablar con una persona',
-            'hablar con alguien',
-            'hablar con un humano',
-            'persona',
-            'humano',
-            'conectar'
-          );
-        }
         return patterns.some((p) => normalized.includes(p));
       }
 
@@ -1221,30 +916,20 @@
           'let\'s continue',
           'ready',
         ];
-        if (this.state.language === 'es') {
-          patterns.push(
-            'continuar',
-            'continua',
-            'sigamos',
-            'seguir',
-            'sigue',
-            'adelante',
-            'vamos a continuar',
-            'listo',
-            'lista'
-          );
-        }
         return patterns.some((p) => normalized.includes(p));
       }
 
       getBridgeText(index) {
-        const strings = getStrings(this.state.language);
-        const options = strings.bridgeOptions;
+        const options = [
+          "That's why we ask.",
+          "I appreciate you asking.",
+          "Thanks for checking on that.",
+          "That context helps.",
+        ];
         return options[index % options.length];
       }
 
       async handleWhy(questionIndex, question, sessionId) {
-        const strings = getStrings(this.state.language);
         const currentCount = this.state.explainCounts[question.id] || 0;
         const nextCount = currentCount + 1;
         const explainCounts = { ...this.state.explainCounts, [question.id]: nextCount };
@@ -1255,28 +940,25 @@
         }
 
         this.setState({ status: 'validating' });
-        const questionText = getQuestionText(question, this.state.language);
-        const sectionLabel = getSectionLabel(question.section, this.state.language);
         const whyResponse = await this.why.explain(
-          questionText,
-          sectionLabel,
+          question.question,
+          question.section,
           nextCount,
-          this.state.lastWhyExplanation || null,
-          strings.whyFallback
+          this.state.lastWhyExplanation || null
         );
         if (this.sessionId !== sessionId) return;
 
-        const explanation = whyResponse.explanation || strings.whyFallback;
+        const explanation = whyResponse.explanation || 'This helps us understand your medical history for your application.';
         this.setState({ lastWhyExplanation: explanation });
         const bridge = this.getBridgeText(nextCount - 1);
-        const prompt = strings.whyPrompt;
+        const prompt = "Let me know if you want me to repeat it, or go ahead and answer.";
         const combined = `${explanation} ${bridge} ${prompt}`;
 
         this.setState({ status: 'speaking' });
         await this.speakAssistant(combined, sessionId);
         if (this.sessionId !== sessionId) return;
 
-        this.setState({ status: 'listening', pendingAssistantMessage: null });
+        this.setState({ status: 'listening' });
         const response = await this.asr.listen(15000);
         if (this.sessionId !== sessionId) return;
 
@@ -1289,7 +971,7 @@
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
         }
 
-        this.recordUserAnswer(response);
+        this.state.transcript.push({ role: 'user', text: response });
 
         if (this.isRepeatRequest(response)) {
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
@@ -1303,13 +985,12 @@
       }
 
       async handleHandoff(questionIndex, question, sessionId) {
-        const strings = getStrings(this.state.language);
-        const handoffMessage = strings.handoffPrompt;
+        const handoffMessage = "I want to make sure we get this right. I can connect you to an agent, or we can move forward here. What do you prefer?";
         this.setState({ status: 'speaking' });
         await this.speakAssistant(handoffMessage, sessionId);
         if (this.sessionId !== sessionId) return;
 
-        this.setState({ status: 'listening', pendingAssistantMessage: null });
+        this.setState({ status: 'listening' });
         const response = await this.asr.listen(15000);
         if (this.sessionId !== sessionId) return;
 
@@ -1322,7 +1003,7 @@
           return this.askQuestion(questionIndex, { preserveRetryCount: true });
         }
 
-        this.recordUserAnswer(response);
+        this.state.transcript.push({ role: 'user', text: response });
 
         if (this.isAgentRequest(response)) {
           this.setState({ status: 'handoff' });
@@ -1342,10 +1023,8 @@
 
       async handleValidation(questionIndex, question, spokenAnswer, sessionId) {
         this.setState({ status: 'validating' });
-        const strings = getStrings(this.state.language);
-        const questionText = getQuestionText(question, this.state.language);
         const validation = await this.validator.validate(
-          questionText,
+          question.question,
           question.type,
           spokenAnswer,
           question.choices
@@ -1353,7 +1032,7 @@
         if (this.sessionId !== sessionId) return;
 
         if (validation.repeat) {
-          const acknowledgement = strings.repeatAcknowledgement;
+          const acknowledgement = "Sure, I'll repeat the question.";
           this.setState({ status: 'speaking' });
           await this.speakAssistant(acknowledgement, sessionId);
           if (this.sessionId !== sessionId) return;
@@ -1366,7 +1045,7 @@
               this.setState({ retryCount: retryNum });
 
             const explanation = validation.explanation || this.getGenericExplanation(question.type);
-            const escalation = retryNum === 2 ? strings.retryEscalation : "";
+            const escalation = retryNum === 2 ? " Let's try once more." : "";
             const clarification = explanation + escalation;
 
               await this.speakAssistant(clarification, sessionId);
@@ -1374,7 +1053,7 @@
               return this.askQuestion(questionIndex, { preserveRetryCount: true, retryCountOverride: retryNum });
             }
 
-          await this.speakAssistant(strings.moveOnNext, sessionId);
+          await this.speakAssistant("Let's move on to the next question.", sessionId);
           if (this.sessionId !== sessionId) return;
           this.state.answers[question.id] = spokenAnswer;
           return this.advanceToNextQuestion(questionIndex, spokenAnswer);
@@ -1392,24 +1071,26 @@
         }
         this.state.answers[question.id] = cleanedAnswer;
 
-        const followupConfig = question.followups;
-        const followupWhen = followupConfig ? (followupConfig.when || 'after_valid') : null;
-        const shouldRunFollowups = followupConfig && (followupWhen === 'after_valid' || followupWhen === 'after_answer');
-        if (shouldRunFollowups) {
-          await this.handleFollowups(question, questionIndex, cleanedAnswer, sessionId);
-          if (this.sessionId !== sessionId) return;
-        }
-
-        await this.speakAssistant(strings.thankYou, sessionId);
+        await this.speakAssistant("Thank you.", sessionId);
         if (this.sessionId !== sessionId) return;
 
         this.advanceToNextQuestion(questionIndex, cleanedAnswer);
       }
 
       getGenericExplanation(questionType) {
-        const strings = getStrings(this.state.language);
-        const defaults = strings.genericExplanation;
-        return defaults[questionType] || defaults.open;
+        switch (questionType) {
+          case 'yes_no':
+            return 'Please answer with a clear yes or no.';
+          case 'date':
+            return 'Please provide a date.';
+          case 'number':
+            return 'Please provide a number.';
+          case 'choice':
+            return 'Please choose one of the options.';
+          case 'open':
+          default:
+            return 'Please provide a valid response.';
+        }
       }
 
       advanceToNextQuestion(currentIndex, answer) {
@@ -1428,7 +1109,6 @@
       async start() {
         this.sessionId += 1;
         const sessionId = this.sessionId;
-        const language = this.state.language;
         this.setState({
           status: 'speaking',
           currentQuestionIndex: -1,
@@ -1437,15 +1117,11 @@
           retryCount: 0,
           explainCounts: {},
           lastWhyExplanation: null,
-          announcementsPlayed: {},
-          followups: {},
           pendingAssistantMessage: null,
           error: null,
-          language,
         });
 
-        const strings = getStrings(language);
-        await this.speakAssistant(strings.introMessage, sessionId);
+        await this.speakAssistant(INTRO_MESSAGE, sessionId);
         if (this.sessionId !== sessionId) return;
 
         const firstIndex = this.findNextQuestionIndex(0, {});
@@ -1458,143 +1134,6 @@
         this.asr.stop();
         this.setState({ status: 'idle', pendingAssistantMessage: null });
       }
-
-      async handleFollowups(question, questionIndex, lastAnswer, sessionId) {
-        const followupConfig = question.followups;
-        if (!followupConfig || !followupConfig.max || followupConfig.max <= 0) {
-          return;
-        }
-
-        const existing = this.state.followups[question.id] || { count: 0, items: [] };
-        let count = existing.count;
-        let items = [...existing.items];
-        const retryLimit = Number.isInteger(followupConfig.retryLimit) ? followupConfig.retryLimit : MAX_RETRIES;
-        const language = this.state.language;
-        const sectionLabel = getSectionLabel(question.section, language);
-        const questionText = getQuestionText(question, language);
-        const resolvedIndex = Number.isInteger(questionIndex)
-          ? questionIndex
-          : QUESTIONS.findIndex((q) => q.id === question.id);
-        const upcomingQuestions = resolvedIndex >= 0
-          ? this.getUpcomingQuestionTexts(resolvedIndex, 4, language)
-          : [];
-
-        while (count < followupConfig.max) {
-          const followupRequest = {
-            context: language === 'es'
-              ? 'Life insurance intake for underwriting risk assessment. Respond in Spanish.'
-              : 'Life insurance intake for underwriting risk assessment.',
-            section: sectionLabel,
-            questionId: question.id,
-            questionText,
-            lastAnswer,
-            priorAnswers: this.getRecentUserAnswers(5),
-            recentQAPairs: this.getRecentQuestionAnswerPairs(4),
-            sectionAnswers: this.getSectionAnswers(question.section),
-            primaryContext: this.state.answers['pmv.last_visit_reason']
-              ? { id: 'pmv.last_visit_reason', answer: this.state.answers['pmv.last_visit_reason'] }
-              : null,
-            topic: followupConfig.topic || sectionLabel,
-            guidance: followupConfig.guidance || null,
-            previousFollowups: this.getPreviousFollowupQuestions(question.id),
-            upcomingQuestions,
-          };
-
-          const followup = await this.followup.nextQuestion(followupRequest);
-          if (this.sessionId !== sessionId) return;
-
-          if (!followup || followup.done || !followup.ask) {
-            break;
-          }
-
-          const normalizedAsk = followup.ask.trim();
-          if (!normalizedAsk) break;
-          const askedBefore = items.some((item) => item.q.toLowerCase() === normalizedAsk.toLowerCase());
-          if (askedBefore) break;
-          if (this.isSimilarToUpcomingQuestion(normalizedAsk, upcomingQuestions)) break;
-
-          const overlapCheck = await this.followup.checkOverlap({
-            candidateQuestion: normalizedAsk,
-            upcomingQuestions,
-          });
-          if (this.sessionId !== sessionId) return;
-          if (!overlapCheck || overlapCheck.allow === false) break;
-
-          this.setState({ status: 'speaking' });
-          await this.speakAssistant(normalizedAsk, sessionId);
-          if (this.sessionId !== sessionId) return;
-
-          const result = await this.collectFollowupAnswer(
-            normalizedAsk,
-            retryLimit,
-            sessionId
-          );
-          if (this.sessionId !== sessionId) return;
-
-          if (!result) break;
-
-          items = items.concat({ q: normalizedAsk, a: result.answer });
-          count += 1;
-
-          this.setState({
-            followups: { ...this.state.followups, [question.id]: { count, items } },
-          });
-        }
-      }
-
-      async collectFollowupAnswer(questionText, retryLimit, sessionId) {
-        let attempts = 0;
-        let lastResponse = '';
-        const strings = getStrings(this.state.language);
-
-        while (true) {
-          this.setState({ status: 'listening', pendingAssistantMessage: null });
-          const response = await this.asr.listen(15000);
-          if (this.sessionId !== sessionId) return null;
-
-          if (!response) {
-            if (attempts < retryLimit) {
-              this.setState({ status: 'speaking' });
-              await this.speakAssistant(strings.noResponseRetry, sessionId);
-              if (this.sessionId !== sessionId) return null;
-              await this.speakAssistant(questionText, sessionId);
-              if (this.sessionId !== sessionId) return null;
-              this.setState({ pendingAssistantMessage: null });
-              attempts += 1;
-              continue;
-            }
-            return { answer: 'NO_RESPONSE' };
-          }
-
-            this.recordUserAnswer(response);
-          lastResponse = response;
-
-          const validation = await this.validator.validate(
-            questionText,
-            'open',
-            response,
-            null
-          );
-          if (this.sessionId !== sessionId) return null;
-
-          if (!validation.valid) {
-            if (attempts < retryLimit) {
-              const explanation = validation.explanation || this.getGenericExplanation('open');
-              this.setState({ status: 'speaking' });
-              await this.speakAssistant(explanation, sessionId);
-              if (this.sessionId !== sessionId) return null;
-              await this.speakAssistant(questionText, sessionId);
-              if (this.sessionId !== sessionId) return null;
-              this.setState({ pendingAssistantMessage: null });
-              attempts += 1;
-              continue;
-            }
-            return { answer: lastResponse };
-          }
-
-          return { answer: validation.normalized };
-        }
-      }
     }
 
     // ============================================================================
@@ -1603,35 +1142,11 @@
     
     const controller = new FlowController();
 
-    function renderLanguageSelect(state, strings) {
-      const normalized = normalizeLanguage(state.language);
-      const isDisabled = state.status !== 'idle';
-      const disabledClass = isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer';
-      const options = Object.entries(LANGUAGE_OPTIONS)
-        .map(([key, config]) => `
-          <option value="${key}" ${key === normalized ? 'selected' : ''}>${config.label}</option>
-        `)
-        .join('');
-
-      return `
-        <label class="flex items-center gap-2 text-xs font-semibold text-[var(--brand-text-secondary)]">
-          <span>${strings.languageLabel}</span>
-          <select id="languageSelect"
-                  class="border border-[var(--brand-border)] rounded-md bg-white px-2 py-1 text-[var(--brand-text)] ${disabledClass}"
-                  ${isDisabled ? 'disabled' : ''}>
-            ${options}
-          </select>
-        </label>
-      `;
-    }
-
     function render(state) {
       const app = document.getElementById('app');
       const question = state.currentQuestionIndex >= 0 && state.currentQuestionIndex < QUESTIONS.length
         ? QUESTIONS[state.currentQuestionIndex]
         : null;
-      const strings = getStrings(state.language);
-      const sectionLabel = question ? getSectionLabel(question.section, state.language) : '';
       
       const progress = state.currentQuestionIndex >= 0
         ? Math.min(100, Math.round(((state.currentQuestionIndex + 1) / QUESTIONS.length) * 100))
@@ -1643,10 +1158,7 @@
           <div class="bg-white border-b border-[var(--brand-border)] px-6 py-2">
             <div class="max-w-6xl mx-auto flex items-center justify-between text-[var(--brand-primary)] text-sm font-semibold">
               <span>Protective Life</span>
-              <div class="flex items-center gap-4">
-                <span>${strings.headerSubtitle}</span>
-                ${renderLanguageSelect(state, strings)}
-              </div>
+              <span>AI Voice Application Prototype</span>
             </div>
           </div>
           <div class="bg-[var(--brand-primary)] px-6 py-4">
@@ -1654,14 +1166,14 @@
               <div class="flex items-center gap-4">
                 <img src="logo.svg" alt="Protective Life logo" class="h-8 w-auto" />
                 <div>
-                  <h1 class="text-xl font-bold">${strings.headerTitle}</h1>
-                  <p class="text-sm text-white/80">${strings.headerTagline}</p>
+                  <h1 class="text-xl font-bold">Medical History Questionnaire</h1>
+                  <p class="text-sm text-white/80">Insurance Application</p>
                 </div>
               </div>
               ${state.status !== 'idle' && state.status !== 'complete' && question ? `
                 <div class="text-right">
-                  <div class="text-sm font-semibold">${sectionLabel}</div>
-                  <div class="text-xs text-white/70">${strings.questionCount(state.currentQuestionIndex + 1, QUESTIONS.length)}</div>
+                  <div class="text-sm font-semibold">${question.section}</div>
+                  <div class="text-xs text-white/70">Question ${state.currentQuestionIndex + 1} of ${QUESTIONS.length}</div>
                 </div>
               ` : ''}
             </div>
@@ -1673,7 +1185,7 @@
           <div class="bg-white px-6 py-2 border-b border-[var(--brand-border)]">
             <div class="max-w-6xl mx-auto">
               <div class="flex justify-between text-xs text-[var(--brand-text-secondary)] mb-1">
-                <span>${strings.progressLabel}</span>
+                <span>Progress</span>
                 <span>${progress}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-1.5">
@@ -1688,12 +1200,12 @@
         <main class="max-w-6xl mx-auto px-6 py-12">
           <div class="flex gap-8">
             <div class="flex-1">
-              ${state.status === 'idle' ? renderIdle(state, strings) : ''}
-              ${['speaking', 'listening', 'validating'].includes(state.status) ? renderActive(state, question, strings) : ''}
-              ${state.status === 'handoff' ? renderHandoff(strings) : ''}
-              ${state.status === 'complete' ? renderComplete(state, strings) : ''}
+              ${state.status === 'idle' ? renderIdle(state) : ''}
+              ${['speaking', 'listening', 'validating'].includes(state.status) ? renderActive(state, question) : ''}
+              ${state.status === 'handoff' ? renderHandoff() : ''}
+              ${state.status === 'complete' ? renderComplete(state) : ''}
             </div>
-            ${['idle', 'complete', 'handoff'].includes(state.status) ? '' : renderChatFeed(state, strings)}
+            ${['idle', 'complete', 'handoff'].includes(state.status) ? '' : renderChatFeed(state)}
           </div>
         </main>
       `;
@@ -1701,9 +1213,6 @@
       // Event handlers
       document.getElementById('startBtn')?.addEventListener('click', () => controller.start());
       document.getElementById('endBtn')?.addEventListener('click', () => controller.stop());
-      document.getElementById('languageSelect')?.addEventListener('change', (event) => {
-        controller.setLanguage(event.target.value);
-      });
       document.getElementById('restartBtn')?.addEventListener('click', () => {
         controller.state = { ...controller.state, status: 'idle' };
         render(controller.state);
@@ -1715,7 +1224,7 @@
       }
     }
 
-    function renderIdle(state, strings) {
+    function renderIdle(state) {
       const isSupported = new ASRService().isSupported();
 
       return `
@@ -1727,9 +1236,10 @@
                       d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </div>
-            <h2 class="text-3xl font-bold mb-4">${strings.readyTitle}</h2>
+            <h2 class="text-3xl font-bold mb-4">Ready to Begin</h2>
             <p class="text-[var(--brand-text-secondary)] mb-8 max-w-lg mx-auto leading-relaxed">
-              ${strings.readyDescription}
+              This questionnaire will ask about your medical history using voice interaction. 
+              Please ensure you're in a quiet environment and speak clearly.
             </p>
           </div>
 
@@ -1737,13 +1247,13 @@
                   class="px-10 py-4 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          rounded-full text-lg font-semibold text-white transition-all shadow-xl 
                          hover:scale-105">
-            ${strings.startButton}
+            Start Application
           </button>
 
           ${!isSupported ? `
             <div class="mt-6 p-4 bg-white border border-[var(--brand-border)] rounded-xl max-w-md mx-auto shadow-xl">
               <p class="text-[var(--brand-text-secondary)] text-sm">
-                ${strings.unsupportedAsr}
+                ⚠️ Voice recognition is not supported in this browser. Please use Chrome or Edge.
               </p>
             </div>
           ` : ''}
@@ -1758,30 +1268,29 @@
       `;
     }
 
-    function renderActive(state, question, strings) {
+    function renderActive(state, question) {
       const configs = {
         speaking: {
           color: 'bg-[var(--brand-primary)]',
           shadow: 'shadow-xl',
-          label: strings.speakingLabel,
-          sublabel: strings.speakingSub,
+          label: 'Speaking',
+          sublabel: 'Please listen to the question',
         },
         listening: {
           color: 'bg-[var(--brand-secondary)]',
           shadow: 'shadow-xl',
-          label: strings.listeningLabel,
-          sublabel: strings.listeningSub,
+          label: 'Listening',
+          sublabel: 'Please speak your answer clearly',
         },
         validating: {
           color: 'bg-[var(--brand-highlight)]',
           shadow: 'shadow-xl',
-          label: strings.validatingLabel,
-          sublabel: strings.validatingSub,
+          label: 'Processing',
+          sublabel: 'Analyzing your response with AI',
         },
       };
       
       const cfg = configs[state.status];
-      const questionText = question ? getQuestionText(question, state.language) : '';
 
       return `
         <div class="text-center">
@@ -1801,7 +1310,7 @@
               ` : `
                 <svg class="w-16 h-16 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                        d="M20 4v5h-0.582m-15.356 2A8.001 8.001 0 0119.418 9m0 0H15m-11 11v-5h0.581m0 0a8.003 8.003 0 0015.357-2m-15.357 2H9" />
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               `}
             </div>
@@ -1810,55 +1319,38 @@
           </div>
 
           <!-- Current Question -->
-          ${question && state.showQuestionText !== false ? `
+          ${question ? `
             <div class="bg-white rounded-xl p-8 mb-10 max-w-2xl mx-auto border-t-4 border-[var(--brand-primary)] shadow-xl">
-              <p class="text-xl leading-relaxed">${questionText}</p>
+              <p class="text-xl leading-relaxed">${question.question}</p>
               ${question.type === 'yes_no' ? `
-                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">${strings.yesNoHint}</p>
+                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">Please answer yes or no</p>
               ` : ''}
               ${question.type === 'choice' && question.choices ? `
-                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">${strings.optionsLabel}: ${question.choices.join(', ')}</p>
+                <p class="text-sm text-[var(--brand-text-secondary)] mt-4">Options: ${question.choices.join(', ')}</p>
               ` : ''}
             </div>
           ` : ''}
 
           <!-- Retry indicator -->
           ${state.retryCount > 0 ? `
-            <p class="text-[var(--brand-text-secondary)] text-sm mb-6">${strings.retryLabel(state.retryCount + 1, MAX_RETRIES + 1)}</p>
+            <p class="text-[var(--brand-text-secondary)] text-sm mb-6">Attempt ${state.retryCount + 1} of ${MAX_RETRIES + 1}</p>
           ` : ''}
 
           <!-- End Call Button -->
           <button id="endBtn" 
                   class="px-8 py-3 bg-white text-red-600 border border-red-300 hover:border-red-400 rounded-full font-semibold transition-colors shadow-sm">
-            ${strings.endCallButton}
+            End Call
           </button>
         </div>
       `;
     }
 
-    function renderComplete(state, strings) {
+    function renderComplete(state) {
       const summaryItems = Object.entries(state.answers).map(([id, answer]) => {
         const q = QUESTIONS.find(q => q.id === id);
-        const followupItems = state.followups?.[id]?.items || [];
-        const followupHtml = followupItems.length > 0
-          ? `
-            <div class="mt-3 space-y-2">
-              ${followupItems.map((item, index) => `
-                <div class="text-xs text-[var(--brand-text-secondary)]">
-                  <div class="font-semibold">${strings.followupLabel(index + 1)}</div>
-                  <div>${item.q}</div>
-                  <div class="text-[var(--brand-text)]">${item.a}</div>
-                </div>
-              `).join('')}
-            </div>
-          `
-          : '';
         return `
           <div class="flex justify-between py-3 border-b border-gray-200 last:border-0">
-            <span class="text-[var(--brand-text-secondary)] text-sm flex-1 pr-4">
-              ${q ? getQuestionText(q, state.language) : id}
-              ${followupHtml}
-            </span>
+            <span class="text-[var(--brand-text-secondary)] text-sm flex-1 pr-4">${q?.question || id}</span>
             <span class="font-medium text-sm text-right max-w-[200px]">${answer}</span>
           </div>
         `;
@@ -1872,29 +1364,29 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 class="text-3xl font-bold mb-4">${strings.completionTitle}</h2>
+          <h2 class="text-3xl font-bold mb-4">Application Complete</h2>
           <p class="text-[var(--brand-text-secondary)] mb-10 max-w-lg mx-auto">
-            ${strings.completionDescription}
+            Thank you for completing the questionnaire. Your responses have been recorded.
           </p>
 
           <!-- Summary -->
           <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto text-left border-t-4 border-[var(--brand-primary)] shadow-xl">
-            <h3 class="font-semibold mb-4 text-lg">${strings.summaryTitle}</h3>
+            <h3 class="font-semibold mb-4 text-lg">Response Summary</h3>
             <div class="max-h-96 overflow-y-auto">
-              ${summaryItems || `<p class="text-[var(--brand-text-secondary)]">${strings.summaryEmpty}</p>`}
+              ${summaryItems || '<p class="text-[var(--brand-text-secondary)]">No responses recorded</p>'}
             </div>
           </div>
 
           <button id="restartBtn" 
                   class="mt-10 px-8 py-3 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          text-white rounded-full font-semibold transition-all shadow-xl">
-            ${strings.restartButton}
+            Start New Application
           </button>
         </div>
       `;
     }
 
-    function renderHandoff(strings) {
+    function renderHandoff() {
       return `
         <div class="text-center">
           <div class="w-32 h-32 mx-auto bg-[var(--brand-primary)] rounded-full 
@@ -1903,24 +1395,24 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 class="text-3xl font-bold mb-4">${strings.handoffTitle}</h2>
+          <h2 class="text-3xl font-bold mb-4">Agent Handoff Requested</h2>
           <p class="text-[var(--brand-text-secondary)] mb-10 max-w-lg mx-auto">
-            ${strings.handoffDescription}
+            We can connect you with an agent to finish this question.
           </p>
           <button id="restartBtn" 
                   class="mt-4 px-8 py-3 bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] 
                          text-white rounded-full font-semibold transition-all shadow-xl">
-            ${strings.handoffRestartButton}
+            Start Over
           </button>
         </div>
       `;
     }
 
-    function renderTranscript(state, strings) {
+    function renderTranscript(state) {
       const transcriptHtml = state.transcript.map(entry => `
         <div class="py-2 ${entry.role === 'user' ? 'text-blue-400' : 'text-slate-300'}">
           <span class="font-semibold text-xs uppercase tracking-wide opacity-60">
-            ${entry.role === 'user' ? strings.transcriptUser : strings.transcriptSystem}:
+            ${entry.role === 'user' ? 'User' : 'System'}:
           </span>
           <span class="ml-2">${entry.text}</span>
         </div>
@@ -1930,7 +1422,7 @@
         <div class="fixed bottom-4 right-4 z-50">
           <details class="bg-slate-900/95 backdrop-blur rounded-lg border border-slate-700 shadow-xl max-w-md">
             <summary class="px-4 py-2 cursor-pointer text-slate-400 hover:text-white text-sm">
-              ${strings.transcriptLabel(state.transcript.length)}
+              📝 Transcript (${state.transcript.length})
             </summary>
             <div class="px-4 pb-4 max-h-64 overflow-y-auto text-sm">
               ${transcriptHtml}
@@ -1940,7 +1432,7 @@
       `;
     }
 
-    function renderChatFeed(state, strings) {
+    function renderChatFeed(state) {
       const bubbleHtml = state.transcript.map(entry => {
         const isUser = entry.role === 'user';
         const bubbleClass = isUser
@@ -1978,19 +1470,19 @@
                 <span class="text-sm font-semibold text-white">AI</span>
               </div>
               <div>
-                <div class="text-sm font-semibold">${strings.chatAssistantName}</div>
-                <div class="text-xs text-[var(--brand-text-secondary)]">${strings.chatSubtitle}</div>
+                <div class="text-sm font-semibold">Underwriting Assistant</div>
+                <div class="text-xs text-[var(--brand-text-secondary)]">Live demo transcript</div>
               </div>
             </div>
             <div id="chatScroll" class="flex-1 overflow-y-auto space-y-3 py-4 pr-1">
-              ${bubbleHtml || `<div class="text-[var(--brand-text-secondary)] text-sm">${strings.chatEmpty}</div>`}
+              ${bubbleHtml || '<div class="text-[var(--brand-text-secondary)] text-sm">Conversation will appear here.</div>'}
               ${showUserTyping ? typingDots(true) : ''}
               ${state.pendingAssistantMessage ? typingDots(false) : ''}
-              ${showSystemTyping && !state.pendingAssistantMessage && state.status !== 'listening' ? typingDots(false) : ''}
+              ${showSystemTyping && !state.pendingAssistantMessage ? typingDots(false) : ''}
             </div>
             <div class="pt-3 border-t border-gray-200">
               <div class="bg-[var(--brand-background)] rounded-xl px-4 py-3 text-[var(--brand-text-secondary)] text-xs">
-                ${strings.voiceModeEnabled}
+                Voice mode enabled
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ This file provides context for AI coding assistants (Codex, Claude, Copilot, etc
 This is a **voice-based insurance questionnaire application** that uses:
 - **Deterministic question flow** (questions are in a static array, not AI-generated)
 - **AI-powered answer validation** (Anthropic Claude or OpenAI validates responses)
+- **Optional LLM follow-up questions** (bounded, contextual, and non-blocking)
 - **ElevenLabs TTS** for high-quality text-to-speech
 - **Web Speech API** for voice recognition (browser-based)
 
@@ -16,6 +17,7 @@ The key design constraint is **separation of concerns**:
 - The **flow** is deterministic (JavaScript state machine)
 - The **validation** uses AI (but with constrained output)
 - The AI **cannot skip, add, or reorder questions**
+- The LLM **may ask bounded follow-up questions** when enabled
 
 ```
 User speaks → ASR transcribes → AI validates → State machine advances
@@ -40,18 +42,25 @@ voice-questionnaire/
 
 ### server.js
 
-The Express backend with three endpoints:
+The Express backend with six endpoints:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | `/api/config` | GET | Returns which features are enabled |
 | `/api/tts` | POST | Proxies text-to-speech to ElevenLabs |
 | `/api/validate` | POST | Proxies validation to Anthropic/OpenAI |
+| `/api/why` | POST | Returns a brief "why" explanation |
+| `/api/followup` | POST | Generates a single LLM follow-up |
+| `/api/followup-check` | POST | Blocks overlap with upcoming scripted questions |
 
 **Key functions:**
 - `buildValidationPrompt()` - Constructs the LLM prompt for validation
+- `buildWhyPrompt()` - Constructs the "why" explanation prompt
+- `buildFollowupPrompt()` - Constructs the follow-up question prompt
 - `validateWithAnthropic()` - Calls Claude API
 - `validateWithOpenAI()` - Calls OpenAI API
+- `followupWithAnthropic()` - Calls Claude for follow-ups
+- `followupWithOpenAI()` - Calls OpenAI for follow-ups
 - `fallbackValidation()` - Rule-based validation when APIs unavailable
 
 ### public/index.html
@@ -61,6 +70,7 @@ Single-file frontend containing:
 - `TTSService` class - Text-to-speech (ElevenLabs or Web Speech)
 - `ASRService` class - Speech recognition (Web Speech API)
 - `ValidationService` class - Calls backend `/api/validate`
+- `FollowupService` class - Calls backend `/api/followup` + `/api/followup-check`
 - `FlowController` class - State machine managing question flow
 - `render()` function - UI rendering
 
@@ -87,6 +97,19 @@ Edit the `QUESTIONS` array in `public/index.html`:
     id: 'previous_question_id', 
     answer: 'YES'                   // Only ask if this condition met
   },
+
+  // Optional: More complex requirements
+  // requires: [{ id: 'cardio.gateway', answer: 'YES' }, { id: 'cardio.dx', contains: 'hypertension' }],
+
+  // Optional: Bounded LLM follow-ups
+  followups: {
+    max: 5,                         // Max follow-ups; LLM can stop early
+    when: 'after_valid',            // after_valid | after_answer
+    topic: 'visit details',
+    guidance: 'Ask about diagnosis or treatment only.',
+    retryLimit: 3,
+    stopOnNoResponse: true,
+  },
   
   // Optional: For 'choice' type
   choices: ['option1', 'option2'],
@@ -99,6 +122,21 @@ Edit the `QUESTIONS` array in `public/index.html`:
 - `number` - Expects numeric value
 - `open` - Free-form text (most lenient validation)
 - `choice` - Must match one of provided choices
+
+### Follow-up Questions (LLM)
+
+Follow-ups are optional and bounded. The LLM may return `{done: true}` and skip follow-ups at any time.
+
+```javascript
+followups: {
+  max: 5,
+  when: 'after_valid',
+  topic: 'cardiovascular medications',
+  guidance: 'Ask about dosage or adherence only.',
+  retryLimit: 3,
+  stopOnNoResponse: true,
+}
+```
 
 ### Modifying Validation Logic
 
@@ -246,6 +284,10 @@ curl -X POST http://localhost:3000/api/validate \
 
 Expected: `{"valid":true,"normalized":"YES"}`
 
+### Testing Follow-ups
+
+Follow-ups use `/api/followup` and `/api/followup-check`. If no API keys are configured, follow-ups return `{done: true}`.
+
 ### Testing Edge Cases
 
 Test these scenarios:
@@ -277,6 +319,7 @@ Test these scenarios:
 - Keep questions in the static `QUESTIONS` array
 - Use the established question types
 - Return only `{valid, normalized}` from validation
+- Keep follow-ups bounded and optional
 - Test with voice after making changes
 - Handle API failures gracefully (fallback validation)
 
